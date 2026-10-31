@@ -1,0 +1,133 @@
+// A sidebar de páginas de extensão (support, wiki) deitada numa linha abaixo do
+// cabeçalho; o tema não desenha coluna lateral nessas páginas.
+.avocado-extension-toolbar() {
+  // No telefone o core posiciona os controles de forma absoluta no cabeçalho,
+  // como na home; a barra não ocupa espaço.
+  @media @phone {
+    height: 0;
+    overflow: hidden;
+  }
+
+  @media @tablet-up {
+    margin-bottom: 22px;
+
+    // O .sideNav do core tem largura fixa no desktop e vira faixa rolante no tablet.
+    .IndexPage-nav.sideNav {
+      width: auto;
+      padding: 0;
+      overflow: visible;
+      white-space: normal;
+
+      &:after {
+        display: none;
+      }
+
+      > ul {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        width: auto;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+
+        > li {
+          display: block;
+          width: auto;
+          margin: 0;
+        }
+      }
+    }
+
+    .IndexPage-nav.sideNav > ul > li.item-nav {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    // O SelectDropdown já chega expandido no tablet+; basta deitar a lista.
+    .IndexPage-nav.sideNav .Dropdown--select .Dropdown-menu {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+
+      > li {
+        width: auto;
+        margin: 0;
+
+        > a {
+          .avocado-pill-btn(34px; 14px; 13px);
+          width: auto;
+          background: var(--avocado-surface-1);
+          color: var(--text-color);
+          font-weight: 600;
+          text-decoration: none;
+
+          // O tema faz do ícone da nav uma bolinha de 28px; numa aba ele é só o ícone.
+          .Button-icon:not(.TagIcon) {
+            flex: 0 0 auto;
+            width: auto;
+            height: auto;
+            line-height: 1;
+            margin: 0;
+            background: none;
+            border-radius: 0;
+            font-size: 12px;
+            color: var(--muted-color);
+          }
+
+          .Button-label {
+            flex: 0 1 auto;
+            .avocado-truncate();
+          }
+
+          &:hover,
+          &:focus {
+            background: color-mix(in srgb, var(--avocado-surface-1) 60%, #d0d0d8);
+            color: var(--text-color);
+            text-decoration: none;
+          }
+        }
+
+        &.active > a {
+          &,
+          &:hover,
+          &:focus {
+            background: var(--primary-color);
+            color: #fff;
+            font-weight: 600;
+          }
+
+          .Button-icon:not(.TagIcon) {
+            color: inherit;
+            background: none;
+          }
+        }
+      }
+
+      // O separador só aparece quando a navegação do fórum vai para o support.
+      > .Dropdown-separator {
+        width: 1px;
+        height: 20px;
+        margin: 0 2px;
+        background-color: var(--avocado-border-chip);
+      }
+    }
+
+    // Button--block e width:100% só fazem sentido na coluna lateral.
+    .IndexPage-nav.sideNav .App-primaryControl {
+      margin: 0 0 0 auto;
+      flex: 0 0 auto;
+
+      > .Button {
+        .avocado-pill-btn(38px; 18px; 14px);
+        width: auto;
+        margin: 0;
+        white-space: nowrap;
+      }
+    }
+  }
+}

@@ -1,0 +1,777 @@
+.App {
+  padding-bottom: 0;
+
+  &-footer {
+    &:empty {
+      display: none;
+    }
+  }
+}
+
+// O core imprime o rodapé customizado duas vezes: o <footer> vazio dentro do
+// #app (que o tema preenche) e o HTML cru como filho do <body>, removido no
+// boot. O margin-left do core com o painel fixo é intencional; não sobrescreva.
+
+#app > footer.App-footer:empty,
+.App > footer.App-footer:empty {
+  display: none;
+}
+
+
+
+.Page-main {
+  transition: opacity var(--avocado-t-fast);
+}
+.Page-main > .LoadingIndicator {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.5;
+}
+
+// Dois controles possíveis no cabeçalho, escolhidos por `avocado.search_v1`:
+// o GlobalSearch do Flarum 2 (V2, padrão) e o `Search` inline legado (V1).
+// São mutuamente exclusivos: cada bloco é condicionado a
+// html[data-avocado-search="v1"] ou à negação dele, escrito antes do primeiro
+// paint. Sem essa condição o tamanho do V1 prende o botão do V2 num slot fixo.
+
+html[data-avocado-search="v1"] {
+  // translateZ(0) mantém suave a transição de largura com o header fixo.
+  .Search {
+    position: relative;
+    width: 200px;
+    flex-shrink: 0;
+    transform: translateZ(0);
+    transition: width 0.3s ease !important;
+
+    &.focused {
+      width: 400px;
+    }
+
+    // Com o painel de resultados aberto a barra assume a largura final na hora:
+    // ancorado nas bordas dela, o painel esticaria junto durante a animação.
+    // !important porque o `transition` base também é.
+    &.open {
+      transition: none !important;
+    }
+
+    // Do tablet ao laptop pequeno a barra não cresce no foco, para não estourar o header.
+    @media (max-width: 1100px) {
+      &.focused {
+        width: 200px;
+      }
+    }
+
+    &-input {
+      // `.Search` é flex, e este wrapper parava na largura de um <input> em vez de
+      // preencher a barra. Pode encolher para caber na barra ociosa de 200px.
+      flex: 1 1 auto;
+      min-width: 0;
+      position: relative;
+      overflow: hidden;
+      border-radius: @border-radius;
+      // O --transition do core mantém a regra de largura de 0.4s do .Input .FormControl.
+      --transition: border-color 0.15s ease;
+
+      .Input-prefix-icon {
+        color: inherit;
+        transition: color 0.15s ease;
+      }
+
+      &:hover .Input-prefix-icon {
+        color: var(--primary-color);
+      }
+
+      .FormControl {
+        border-radius: @border-radius;
+        background: var(--control-bg);
+        border-color: transparent;
+
+        &:focus {
+          background: var(--control-bg);
+          border-color: var(--primary-color);
+        }
+
+        &::-webkit-search-cancel-button,
+        &::-webkit-search-decoration {
+          -webkit-appearance: none;
+          appearance: none;
+        }
+      }
+
+      .Search-clear {
+        color: var(--primary-color);
+      }
+    }
+
+    &-results {
+      position: absolute;
+      left: 0;
+      right: 0;
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: @border-radius;
+      overflow: hidden;
+    }
+  }
+
+  // No tablet+ o core faz da busca um botão redondo (o V2 é um botão); no V1
+  // isso encolhe o campo para 36px e esconde o limpar.
+  @media @tablet-up {
+    .Header-secondary .Search .Search-input {
+      width: auto;
+      padding: 0;
+      text-align: start;
+    }
+
+    .Header-secondary .Search .Search-clear {
+      display: flex;
+    }
+  }
+
+  // O `mark` global do core é uma pílula mais alta que a linha de resultado e
+  // vaza dela; aqui um match vira só negrito, como no modal V2.
+  .Search-results mark {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    font-weight: bold;
+    color: inherit;
+  }
+
+  .App-header .Search-results .DiscussionSearchResult {
+    > a {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      overflow: visible;
+      padding: 8px 15px;
+
+      &:hover,
+      &:focus {
+        text-decoration: none;
+        background: var(--control-bg);
+      }
+    }
+
+    .DiscussionSearchResult-title {
+      display: block;
+      width: 100%;
+      font-weight: bold;
+      color: var(--text-color);
+      .avocado-truncate();
+    }
+
+    .DiscussionSearchResult-excerpt {
+      .avocado-line-clamp(2);
+      width: 100%;
+      font-size: 12px;
+      color: var(--muted-color);
+      margin-top: 3px;
+      margin-bottom: 4px;
+      // Herda `white-space: nowrap` do `.Dropdown-menu > li > a`; sem quebra, o
+      // line-clamp não tem segunda linha e o resumo vaza sem reticências.
+      white-space: normal;
+      // URLs longas: `break-word` não quebra uma palavra sozinha na linha, e
+      // `anywhere` permite ao clamp pôr a reticência.
+      overflow-wrap: anywhere;
+    }
+  }
+
+  // No phone a busca fica no drawer.
+  @media @phone {
+    .Search {
+      width: 100% !important;
+      transform: none;
+
+      &.focused {
+        width: 100% !important;
+      }
+    }
+  }
+}
+
+// O core desenha o V2 como botão de ícone com o limpar como irmão solto. Aqui
+// o próprio `.Search` vira a pílula, com os botões transparentes dentro, usando
+// os mesmos tokens do V1. A especificidade do gate ganha do sizing do core sem
+// !important. O phone fica com o core (o controle mora no drawer).
+@media @tablet-up {
+  html:not([data-avocado-search="v1"]) .Header-secondary .Search {
+    --avocado-search-bg: var(--control-bg);
+    --avocado-search-fg: var(--text-color);
+    --avocado-search-muted: var(--muted-color);
+    --avocado-search-accent: var(--primary-color);
+
+    box-sizing: border-box;
+    width: 200px;
+    height: 36px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    border-radius: @border-radius;
+    background: var(--avocado-search-bg);
+    // Anel de foco como sombra interna, não borda: a borda exigiria 2px
+    // transparentes em todo estado para a pílula não mudar de tamanho.
+    transition: box-shadow 0.15s ease, background 0.15s ease;
+
+    &:hover {
+      background: color-mix(in srgb, var(--avocado-search-bg) 92%, var(--avocado-search-fg));
+    }
+
+    // O foco cai no botão, então :focus-within faz o papel do :focus do V1.
+    &:focus-within {
+      box-shadow: inset 0 0 0 2px var(--primary-color);
+    }
+
+    .Search-input {
+      flex: 1 1 auto;
+      min-width: 0;
+      width: auto;
+      max-width: none;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      // O `.Button` do core centraliza o conteúdo.
+      justify-content: flex-start;
+      gap: 9px;
+      padding: 0 2px 0 13px;
+      text-align: start;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      color: var(--avocado-search-fg);
+      // A pílula é opaca: o vidro fosco do .Button--flat só criaria um stacking context.
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+
+      &,
+      &:hover,
+      &:focus {
+        background: transparent;
+      }
+
+      .Button-icon {
+        margin: 0;
+        width: auto;
+        font-size: 14px;
+        color: var(--avocado-search-muted);
+        transition: color 0.15s ease;
+      }
+
+      // No header colorido o accent é a própria superfície, então o token cai na cor do controle.
+      &:hover .Button-icon {
+        color: var(--avocado-search-accent);
+      }
+
+      .Button-label {
+        display: flex;
+        min-width: 0;
+        font-size: 14px;
+      }
+
+      .Button-labelText {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
+
+    // Sem busca ativa o rótulo faz papel de placeholder.
+    &:not(.Search--active) .Search-input .Button-labelText {
+      color: var(--avocado-search-muted);
+    }
+
+    .Search-clear {
+      display: flex;
+      flex-shrink: 0;
+      width: 32px;
+      height: 100%;
+      padding: 0;
+      border-radius: 0;
+      color: var(--avocado-search-accent);
+
+      &,
+      &:hover,
+      &:focus {
+        background: transparent;
+        color: var(--avocado-search-accent);
+      }
+    }
+  }
+
+  // No header colorido usa os mesmos tokens que o core dá ao campo V1.
+  html[data-colored-header="true"]:not([data-avocado-search="v1"]) .Header-secondary .Search {
+    --avocado-search-bg: var(--header-colored-control-bg, rgba(0, 0, 0, 0.1));
+    --avocado-search-fg: var(--header-colored-control-color, #fff);
+    --avocado-search-muted: var(--header-colored-control-color, #fff);
+    --avocado-search-accent: var(--header-colored-control-color, #fff);
+  }
+}
+
+// Esconde o "skip to content" do tema por CSS: removê-lo no servidor exigiria
+// bufferizar o HTML inteiro em cada request.
+a.sr-only.sr-only-focusable-custom[href="#content"],
+.App-drawer .App-skipNav,
+.App-drawer .App-skipLink {
+  display: none !important;
+}
+
+// Um stacking context do .App-header ou do .Page-main pode pintar estes
+// controles sobre o drawer; com ele aberto eles não fazem falta.
+@media @phone {
+  .App.drawerOpen .App-titleControl,
+  .App.drawerOpen .App-primaryControl {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+// No phone os dropdowns do drawer usam o bottom sheet nativo do core. Não
+// sobrescreva position/transform/backdrop: o drawer aberto tem `transform: none`,
+// então o `fixed` do core resolve contra a viewport.
+@media @phone {
+  // O core só estiliza isto no tablet-up.
+  .App-drawer .HeaderList-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .Button {
+      justify-content: center;
+      width: 100%;
+      text-align: center;
+    }
+  }
+}
+
+.Header-title {
+  padding-left: 12px;
+}
+
+// O core colapsa a busca para 1px no tablet sem foco; o V1 continua visível.
+@media @tablet {
+  .Header-title {
+    padding-left: 20px;
+  }
+
+  // Só V1: o controle do V2 é um botão que o core já dimensiona.
+  html[data-avocado-search="v1"] .Header-secondary .Search {
+    input:not(:focus) {
+      width: 100%;
+      background: var(--control-bg);
+    }
+
+    &:not(.active) input {
+      padding-right: 36px;
+    }
+  }
+}
+
+@media @tablet-up {
+  .App {
+    display: flex;
+    flex-direction: column;
+
+    &-content {
+      flex-grow: 1;
+      border-top: 0;
+    }
+  }
+}
+
+@media @desktop-up {
+  .container {
+    padding: 0;
+  }
+}
+
+// Só com logo customizado; sem ele vale o .Header-logo do core.
+html[data-avocado-logo-custom="true"] {
+  img.Header-logo {
+    height: 35px !important;
+    width: auto !important;
+    max-width: 200px !important;
+    vertical-align: middle !important;
+    display: inline-block !important;
+  }
+  // Largura e altura vêm do JS, pela proporção do viewBox.
+  svg.Header-logo {
+    height: 50px !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    overflow: visible;
+  }
+}
+
+// As mesmas regras saem inline do HideLogoFlash para valer antes deste CSS;
+// aqui fica a fonte de verdade. Só dentro do #home-link: a cópia do logo no
+// rodapé tem a própria cor.
+html[data-avocado-logo-colored="true"] #home-link svg.Header-logo {
+  * {
+    fill: var(--header-color) !important;
+  }
+
+  [stroke]:not([stroke='none']) {
+    stroke: var(--header-color) !important;
+  }
+
+  [fill='none'] {
+    fill: none !important;
+  }
+}
+
+html[data-avocado-logo-custom="true"] #home-link svg.Header-logo {
+  transform: translateY(var(--avocado-logo-offset-y, 0px));
+}
+
+// Escopo no logo customizado para não mexer no título em texto ou PNG do core.
+html[data-avocado-logo-custom="true"] {
+  .App-header .Header-title {
+    display: flex !important;
+    align-items: center !important;
+    padding: 5px 0;
+  }
+
+  // No phone o header fica dentro do App-drawer, empilhado, e uma altura fixa
+  // cortaria a busca e os controles de login.
+  @media @tablet-up {
+    .App-header {
+      height: 52px !important;
+      min-height: 52px !important;
+      line-height: 1;
+    }
+
+    // O padding-top do .App usa --header-height; 52px é o padrão do core e o que
+    // o CSS crítico fixa. Fica explícito caso o topo volte a ser mais alto.
+    --header-height: 52px;
+  }
+}
+
+// O blur atrás dos botões melhora a leitura sobre qualquer fundo.
+.App-header .Button--flat {
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+// Rede de segurança: o JS já remove o hero das páginas de extensão, mas uma
+// extensão pode readicioná-lo depois. IndexPage--avocadoRoot permite casar
+// páginas que também usam a classe IndexPage (ex.: LeaderboardPage).
+.Page:not(.DiscussionPage):not(.IndexPage--avocadoRoot) {
+  .Page-hero { display: none !important; }
+}
+
+.AvocadoHome a,
+.AvocadoTagPage a,
+.AvocadoUserPage a,
+.AvocadoTagsPage a,
+.AllDiscussionsPage a,
+.AvocadoDiscussions a,
+.AvocadoSearch a,
+.AvocadoHome-replyBtn,
+.AvocadoSearch-userCard-viewBtn {
+  text-decoration: none !important;
+
+  &:hover {
+    text-decoration: none !important;
+  }
+}
+
+.AvocadoHome-onlineAvatars-more {
+  .avocado-flex-center();
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--avocado-surface-1) 82%, transparent);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  border: 2px solid var(--avocado-online-ring);
+  color: var(--avocado-muted-icon);
+  font-size: 10px;
+  font-weight: 800;
+  margin-left: -7px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+// !important para ganhar do .Button base injetado via JS.
+.AvocadoHeader-authBtn {
+  .avocado-pill-btn(34px; 16px; 13px);
+
+  &--login {
+    border: 1.5px solid var(--primary-color) !important;
+    color: var(--primary-color) !important;
+    background: transparent !important;
+
+    &:hover {
+      background: color-mix(in srgb, var(--primary-color) 8%, transparent) !important;
+    }
+  }
+
+  &--signup {
+    background: var(--primary-color) !important;
+    color: #fff !important;
+    border: none !important;
+
+    &:hover {
+      opacity: 0.88 !important;
+    }
+  }
+}
+
+// Com o header colorido, --header-bg vira a cor primária e os botões
+// primários somem; usa-se --header-color.
+[data-colored-header=true] {
+  .AvocadoHeader-authBtn--login {
+    border-color: var(--header-color) !important;
+    color: var(--header-color) !important;
+
+    &:hover {
+      background: color-mix(in srgb, var(--header-color) 15%, transparent) !important;
+    }
+  }
+
+  .AvocadoHeader-authBtn--signup {
+    background: var(--header-color) !important;
+    // No modo colorido --header-bg é a primária; serve como cor do texto.
+    color: var(--header-bg) !important;
+
+    &:hover {
+      opacity: 0.9 !important;
+    }
+  }
+
+  .AvocadoHeader-authSep {
+    color: var(--header-color) !important;
+    opacity: 0.75;
+  }
+}
+
+.AvocadoDefaultAvatar {
+  display: block !important;  // o .Avatar é inline-flex
+  border-radius: 50%;
+  overflow: hidden;
+
+  .AvocadoDefaultAvatar-bg {
+    fill: color-mix(in srgb, var(--primary-color) 15%, #fff);
+  }
+
+  .AvocadoDefaultAvatar-fg {
+    fill: color-mix(in srgb, var(--primary-color) 42%, #fff);
+  }
+}
+
+// O `display: none` do core no avatar do composer não é !important e perde
+// para o .AvocadoDefaultAvatar.
+@media @phone {
+  .ComposerBody-avatar.AvocadoDefaultAvatar {
+    display: none !important;
+  }
+}
+.minimized .ComposerBody-avatar.AvocadoDefaultAvatar,
+.fullScreen .ComposerBody-avatar.AvocadoDefaultAvatar {
+  display: none !important;
+}
+
+.AvocadoHeader-authSep {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted-color);
+  opacity: 0.65;
+  align-self: center;
+  margin: 0 6px;
+}
+
+// O <li> inline-block do core deixa todas as tags numa linha só.
+.ComposerBody-header > li.item-tags {
+  display: block;
+  width: 100%;
+  margin-right: 0;
+  white-space: normal;
+  overflow: visible;
+
+  > .TagControl,
+  > .TagsInput,
+  > span,
+  > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    white-space: normal;
+  }
+}
+
+.Composer-body .ComposerBody-header {
+  overflow: visible;
+}
+
+// Extensões também põem chips no cabeçalho (idioma, enquete, mason…): eles
+// dividem a linha com as tags e o título desce.
+@media @tablet-up {
+  .ComposerBody--discussion .ComposerBody-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+
+    > li {
+      margin-right: 0;
+      min-width: 0;
+    }
+
+    > li.item-tags {
+      width: auto;
+      flex: 0 1 auto;
+    }
+
+    > li.item-discussionTitle,
+    > li.item-avocadoHeroImage {
+      flex-basis: 100%;
+    }
+  }
+}
+
+// Com as tags como pílulas separadas, o fundo que o core pinta no hover do
+// botão sobrava em volta delas. O botão volta a abraçar as pílulas e, com tags
+// escolhidas, não pinta fundo.
+.ComposerBody-header .DiscussionComposer-changeTags {
+  max-width: 100%;
+  border: 0;
+  white-space: normal;
+
+  .Button-label,
+  .Button-labelText {
+    min-width: 0;
+  }
+
+  .TagsLabel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 5px;
+
+    .TagLabel { margin: 0; }
+  }
+
+  &:has(.TagsLabel) {
+    &,
+    &:hover,
+    &:focus-visible,
+    &:active {
+      background: transparent;
+      box-shadow: none;
+    }
+  }
+}
+
+// Envolvidas em .AvocadoUserPage pelo override do UserPage.
+
+.AvocadoUserPage .SettingsPage,
+.AvocadoUserPage .UserSecurityPage {
+  margin-top: 0;
+
+  > ul {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    > li {
+      list-style: none;
+      margin: 0;
+    }
+  }
+
+  fieldset {
+    border: 1px solid var(--home-border, #eaeaf0);
+    border-radius: 18px;
+    margin: 0;
+    padding: 0;
+    background: var(--control-bg);
+    overflow: hidden;
+    transition: box-shadow var(--avocado-t-medium), border-color var(--avocado-t-medium);
+
+    &:hover {
+      border-color: #dfdfe6;
+      box-shadow: 0 8px 24px rgba(26, 26, 36, 0.06);
+    }
+
+    > legend,
+    > label:first-child {
+      float: none;
+      width: 100%;
+      padding: 14px 20px 12px;
+      border-bottom: 1px solid #f4f4f7;
+      font-family: @font-sans;
+      font-size: @font-xs;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--home-muted, #8f9097);
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    > ul {
+      list-style: none;
+      padding: 16px 20px 18px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+
+      > li {
+        list-style: none;
+        margin: 0;
+      }
+    }
+  }
+}
+
+@media @phone {
+  .AvocadoUserPage .SettingsPage fieldset,
+  .AvocadoUserPage .UserSecurityPage fieldset {
+    border-radius: 14px;
+  }
+}
+
+// Ícones do kit são SVG: dimensionam pelo conteúdo, sem ser cortados.
+.fa-kit {
+  max-height: 44px !important;
+  width: fit-content !important;
+  padding: 0 10px;
+}
+
+html[data-avocado-logo-custom="true"] {
+  .AvocadoLogoSvg {
+    max-width: 100%;
+    height: auto !important;
+    max-height: 50px;
+    width: auto !important;
+    object-fit: contain;
+    object-position: center;
+
+    @media @tablet {
+      max-height: 45px;
+    }
+
+    @media @phone {
+      max-height: 40px;
+    }
+  }
+
+  #home-link.Header-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+  }
+}

@@ -1,0 +1,32 @@
+includes:
+    - vendor/flarum/phpstan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - extend.php
+        - src
+        - migrations
+        # As relações que as extensões opcionais põem nos modelos do core
+        # (Discussion::tags, etc.) vêm dos extend.php delas, como no monorepo do core.
+        - vendor/flarum/tags/extend.php
+    excludePaths:
+        analyse:
+            # Só lido para descobrir as relações, não analisado.
+            - vendor/flarum/tags/extend.php
+    databaseMigrationsPath: ['migrations']
+    ignoreErrors:
+        # linkrobins/support e linkrobins/wiki são integrações opcionais fora do
+        # Packagist: as classes entram nos extenders como string (ver
+        # Support\SupportEvents e Support\WikiStyleSchema).
+        -
+            message: '#expects class-string<Flarum\\Database\\AbstractModel>, string given#'
+            path: extend.php
+        -
+            message: '#expects class-string<Flarum\\Api\\Resource\\AbstractResource>, string given#'
+            path: extend.php
+        # flarum/realtime é pago e não pode entrar no require-dev; o Pusher vem
+        # junto com ele. Os extenders só rodam com a extensão ativa.
+        -
+            message: '#(Flarum\\Realtime\\|Pusher\\Pusher)#'
+            reportUnmatched: false

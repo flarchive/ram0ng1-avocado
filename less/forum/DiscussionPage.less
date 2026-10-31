@@ -1,0 +1,2113 @@
+.Page.DiscussionPage {
+  --disc-bg:      #ffffff;
+  --disc-border:  #f0f0f4;
+  --disc-text:    #43454e;
+  --disc-title:   #202126;
+  --disc-muted:   #8f9097;
+  --disc-avatar:  48px;
+  --disc-gap:     24px;
+  font-family: @font-sans;
+  background: var(--disc-bg);
+
+  // O core dá 10px de margin-top ao .Page-content no tablet+, criando uma faixa sob o header.
+  @media @tablet-up {
+    .Page-content { margin-top: 0; }
+  }
+}
+
+// O JS define --discussion-color (tag), --disc-hero-text (por luminância WCAG)
+// e --disc-hero-surface (botões e pílulas).
+.DiscussionHero {
+  position: relative;
+  background: var(--discussion-color, var(--primary-color));
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.04) 60%);
+    pointer-events: none;
+  }
+
+  .container { padding: 0; max-width: 100%; }
+}
+
+// Só para o autor e moderadores. Usa a superfície do hero para ler sobre cor e imagem.
+.DiscussionHero-imageControls {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+}
+
+.DiscussionHero-imageBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid rgba(255,255,255,0.32);
+  border-radius: 999px;
+  background: rgba(0,0,0,0.35);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background var(--avocado-t-fast), border-color var(--avocado-t-fast), transform var(--avocado-t-fast);
+
+  i { font-size: 12px; }
+
+  &:hover:not(:disabled) {
+    background: rgba(0,0,0,0.55);
+    border-color: rgba(255,255,255,0.55);
+  }
+
+  &:active:not(:disabled) { transform: translateY(1px); }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 600px) {
+    span { display: none; }
+    padding: 0;
+    width: 32px;
+    justify-content: center;
+  }
+}
+
+.DiscussionHero-imageBtn--danger {
+  width: 32px;
+  padding: 0;
+  justify-content: center;
+
+  &:hover:not(:disabled) {
+    background: rgba(189, 50, 50, 0.7);
+    border-color: rgba(255,180,180,0.6);
+  }
+}
+
+// Overlay mais forte para o título ler independente da exposição da foto.
+.DiscussionHero--withImage {
+  background-color: var(--discussion-color, var(--primary-color));
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  &::before {
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.55) 100%),
+      linear-gradient(135deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.10) 70%);
+  }
+
+  .DiscussionHero-inner { position: relative; z-index: 1; }
+
+  .AvocadoHome-badge,
+  .AvocadoHome-tagPill {
+    backdrop-filter: blur(2px);
+  }
+}
+
+.DiscussionHero-inner {
+  position: relative;
+  max-width: var(--home-max-width, 1320px);
+  margin: 0 auto;
+  padding: 48px 20px 52px;
+
+  // Reserva espaço para o título não cobrir a decoração.
+  // 1 ícone: ~100px + 20px de offset + 40px de folga = 160px.
+  &.has-deco-icon      { padding-right: 160px; }
+  &.has-two-deco-icons { padding-right: 420px; }
+}
+
+@media (max-width: 1129px) {
+  .DiscussionHero-inner.has-two-deco-icons {
+    padding-right: 300px !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .DiscussionHero-inner.has-two-deco-icons {
+    padding-right: 260px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .DiscussionHero-inner.has-two-deco-icons {
+    padding-right: 200px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .DiscussionHero-inner {
+    padding: 36px 16px 44px;
+  }
+
+  .DiscussionHero-inner.has-deco-icon {
+    padding-right: 110px !important;
+  }
+
+  .DiscussionHero-inner.has-two-deco-icons {
+    padding-right: 140px !important;
+  }
+}
+
+@media @phone {
+  .DiscussionHero-inner {
+    padding: 32px 16px 40px !important;
+  }
+
+  .DiscussionHero-inner.has-deco-icon,
+  .DiscussionHero-inner.has-two-deco-icons {
+    padding-right: 16px !important;
+  }
+}
+
+.DiscussionHero-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  flex: 1;
+  max-width: 100%;
+  z-index: 1; // acima das decorações
+}
+
+.DiscussionHero-back {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--disc-hero-surface, rgba(255,255,255,0.18));
+  backdrop-filter: blur(3px);
+  color: var(--disc-hero-text, #fff);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--avocado-t-fast);
+
+  &:hover { opacity: 0.85; }
+}
+
+.DiscussionHero-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+  max-width: 100%;
+}
+
+// 0,2,0 ganha do .AvocadoHome-badge (0,1,0). Tooltip via JS.
+.DiscussionHero .AvocadoHome-badge {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  border: none;
+
+  &--sticky    { background: rgba(234,120, 0, 0.82); color: #fff5e0; }
+  &--locked    { background: rgba(210, 45, 45, 0.82); color: #fff0f0; }
+  &--hidden    { background: rgba(80, 82, 94, 0.72); color: rgba(255,255,255,0.80); }
+  &--following { background: rgba(202,152, 0, 0.82); color: #fffbe0; }
+  &--ignoring  { background: rgba(80, 82, 94, 0.55); color: rgba(255,255,255,0.65); }
+}
+
+// Fundo branco com a cor da própria tag, legível sobre qualquer hero.
+.DiscussionHero .AvocadoHome-tagPill {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--tag-color, #b22244);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+
+  &:hover { opacity: 0.88; }
+}
+
+.DiscussionHero-title {
+  color: var(--disc-hero-text, #fff);
+  font-size: clamp(22px, 3.5vw, 36px);
+  font-weight: 900;
+  font-family: @font-sans;
+  letter-spacing: -0.5px;
+  line-height: 1.12;
+  margin: 0 0 10px;
+  word-break: break-word;
+}
+
+.DiscussionHero-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  color: var(--disc-hero-text-muted, rgba(255,255,255,0.78));
+  font-size: 13px;
+  font-weight: 600;
+  font-family: @font-sans;
+  margin-top: 12px;
+}
+
+.DiscussionHero-participants { display: flex; align-items: center; }
+
+.DiscussionHero-participantAvatar {
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 2px solid rgba(255,255,255,0.6);
+  margin-left: -8px;
+  overflow: hidden;
+  box-sizing: content-box;
+
+  &:first-child { margin-left: 0; }
+
+  .Avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: none;
+    box-shadow: none;
+    font-size: 10px;
+  }
+}
+
+.DiscussionHero-participantsMore {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--disc-hero-surface, rgba(255,255,255,0.28));
+  backdrop-filter: blur(3px);
+  border: 2px solid rgba(255,255,255,0.6);
+  color: var(--disc-hero-text, #fff);
+  font-size: 9px;
+  font-weight: 800;
+  margin-left: -8px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.DiscussionHero-metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  i { font-size: 13px; }
+}
+
+.DiscussionHero-decorationIcon {
+  width: fit-content;
+  height: auto;
+  
+  max-width: 100px;
+  min-width: 30px;
+  
+  font-size: clamp(45px, 11vw, 100px);
+  line-height: 1;
+  text-align: center;
+  
+  color: color-mix(
+    in srgb,
+    var(--tag-color-secondary, var(--discussion-color, white))
+      calc(var(--decoration-opacity, 0.15) * 100%),
+    transparent
+  );
+  
+  pointer-events: none;
+  display: none;
+  overflow: visible;
+  padding: 0 1px;
+  flex-shrink: 1;
+  z-index: 2;
+
+  &.is-visible {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // O .fa-kit tem max-height: 44px e padding: 0 10px globais; sem zerar, o
+  // ícone não preenche a caixa.
+  .fa-kit {
+    max-height: none !important;
+    padding: 0 !important;
+    width: auto !important;
+    height: 1em;
+    display: block;
+    line-height: 1;
+  }
+
+  i:not(.fa-kit) {
+    display: block;
+    line-height: 1;
+  }
+}
+
+// align-items: stretch dá a mesma altura a todos os filhos; cada um centra
+// o próprio ícone.
+.DiscussionHero-decorationsContainer {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: var(--deco-pair-gap, 0);
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 75vw;
+  z-index: 2;
+  overflow: visible;
+}
+
+// Logos largos passam de 100px.
+.has-two-deco-icons .DiscussionHero-decorationIcon {
+  max-width: unset;
+}
+
+.has-two-deco-icons .DiscussionHero-decorationsContainer {
+  right: 0;
+}
+
+.DiscussionHero-decoSeparator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: clamp(32px, 8vw, 52px);
+  color: var(--deco-sep-color, rgba(255, 255, 255, 0.5));
+  pointer-events: none;
+  z-index: 3; // acima dos ícones, para o overflow nunca cobri-lo
+  padding: 0 12px;
+
+  i,
+  .fa-kit {
+    display: block;
+    max-height: none !important;
+    padding: 0 !important;
+    line-height: 1;
+  }
+}
+
+.has-two-deco-icons {
+  --deco-pair-gap: 16px;
+
+  &.has-deco-divider {
+    --deco-pair-gap: 0px; // o padding do separador já espaça
+  }
+}
+
+@media @phone {
+  .DiscussionHero-decorationsContainer {
+    display: none !important;
+  }
+}
+
+// O par de ícones não cabe abaixo de 1130px. Max-width explícito porque o
+// @desktop do tema vai até 1199px.
+@media (max-width: 1129px) {
+  .has-two-deco-icons .DiscussionHero-decorationsContainer {
+    display: none !important;
+  }
+
+  .DiscussionHero-inner.has-two-deco-icons {
+    padding-right: 160px !important;
+  }
+}
+
+// Repetido depois dos blocos max-width acima, que têm a mesma especificidade
+// e !important e ganhariam pela ordem.
+@media @phone {
+  .DiscussionHero-inner.has-deco-icon,
+  .DiscussionHero-inner.has-two-deco-icons {
+    padding-right: 16px !important;
+  }
+}
+
+
+.Page.DiscussionPage .CommentPost {
+  background: transparent;
+  overflow: visible;
+  box-shadow: none;
+
+  &:hover { box-shadow: none; }
+}
+
+@media @tablet-up {
+  .Page.DiscussionPage {
+
+    .CommentPost .Post-container {
+      display: grid;
+      grid-template-columns: var(--disc-avatar) 1fr;
+      gap: var(--disc-gap);
+      align-items: start;
+      padding: 0;
+
+      // Filhos extras de extensões vão para a coluna do conteúdo.
+      > *:nth-child(n+3) {
+        grid-column: 2;
+      }
+    }
+
+    .CommentPost .Post-side {
+      position: relative;
+      width: var(--disc-avatar);
+      flex-shrink: 0;
+      top: auto;
+      left: auto;
+    }
+
+    .CommentPost .Post-main {
+      min-width: 0;
+    }
+  }
+}
+
+// Largura da coluna de leitura, nas duas opções de estilo. O `min()` encosta
+// nas margens enquanto a janela for menor que o teto. Escapado (`~"..."`): sem
+// isso o LESS resolve `100% - 48px` na compilação e emite `52%`.
+@media @desktop-up {
+  .Page.DiscussionPage {
+    --disc-max-width: 1440px;
+
+    .Page-container.container {
+      max-width: ~"min(var(--disc-max-width), calc(100% - 48px))";
+      width: 100%;
+    }
+
+    .Page-content {
+      max-width: none;
+      width: auto;
+      margin: 0;
+      flex: 1 1 auto;
+      min-width: 0;
+      padding: 0 44px 0 24px;
+    }
+
+    .Page-sidebar {
+      flex: 0 0 176px;
+      width: 176px;
+    }
+  }
+}
+
+@media @desktop-up {
+  .Page.DiscussionPage {
+    .CommentPost.CommentPost--fixedAvatar {
+      --avocado-avatar-sticky-top: 76px;
+
+      .Post-container {
+        display: grid;
+        grid-template-columns: var(--disc-avatar) 1fr;
+        gap: var(--disc-gap);
+        align-items: start;
+      }
+
+      .Post-side {
+        position: sticky;
+        top: var(--avocado-avatar-sticky-top);
+        align-self: start;
+      }
+    }
+  }
+}
+
+@media @tablet {
+  .Page.DiscussionPage {
+    --disc-avatar: 40px;
+    --disc-gap:    18px;
+  }
+}
+
+@media @phone {
+  .Page.DiscussionPage {
+    --disc-avatar: 34px;
+    --disc-gap:    12px;
+  }
+  // No phone volta o layout em bloco do core; o Post-side some inteiro para
+  // os badges clonados não virarem um bloco solto.
+  .Page.DiscussionPage .CommentPost .Post-side {
+    display: none;
+  }
+  .Page.DiscussionPage .CommentPost .Post-main {
+    min-width: 0;
+  }
+
+  .DiscussionHero-inner {
+    padding: 32px 20px 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .DiscussionHero-nav {
+    gap: 8px;
+    margin-bottom: 18px;
+    justify-content: center;
+    width: 100%;
+  }
+  // flex: initial para o justify-content: center centralizar o grupo.
+  .DiscussionHero-pills {
+    flex: initial;
+    justify-content: center;
+  }
+  .DiscussionHero-title {
+    font-size: clamp(20px, 5.5vw, 28px);
+    text-align: center;
+    width: 100%;
+  }
+  .DiscussionHero-meta { justify-content: center; }
+
+}
+
+.Page.DiscussionPage .CommentPost .Post-side .Avatar,
+.Page.DiscussionPage .CommentPost .Post-side a .Avatar {
+  width: var(--disc-avatar);
+  height: var(--disc-avatar);
+  border-radius: 999px;
+  font-size: calc(var(--disc-avatar) * 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid var(--avocado-online-ring);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.10);
+}
+
+.Page.DiscussionPage .CommentPost .Post-side a {
+  display: block;
+  text-decoration: none;
+}
+
+// No mobile o Post-side some e este avatar inline é o avatar do usuário.
+@media @tablet-up {
+  .Page.DiscussionPage .PostUser-name .Avatar,
+  .Page.DiscussionPage .PostUser-name .Post-avatar,
+  .Page.DiscussionPage .Post-header .PostUser-name .Avatar {
+    display: none !important;
+  }
+}
+
+// Mesma especificidade da regra base, vence pela ordem.
+.Page.DiscussionPage .CommentPost .Post-side--online .Avatar,
+.Page.DiscussionPage .CommentPost .Post-side--online a .Avatar {
+  .avocado-online-ring(2px);
+}
+
+// Só existe para o JS ler a classe.
+.Page.DiscussionPage .CommentPost .Post-side > .UserOnline {
+  display: none !important;
+}
+
+.Page.DiscussionPage .PostUser .UserOnline,
+.Page.DiscussionPage .Post-header .UserOnline {
+  display: none !important;
+}
+
+// fixedAvatar desligado: badges no fluxo do Post-header. Ligado: ficam ocultas
+// e o JS cria um clone no Post-side.
+//
+// `:not(.LrBadgeLabels-list)` isenta a lista do linkrobins/badge-labels, que se
+// posiciona sozinha. É um :not() e não um prefixo em <html> para manter a
+// especificidade abaixo da regra do clone --inSide.
+@media @tablet-up {
+  .Page.DiscussionPage .PostUser-badges:not(.LrBadgeLabels-list) {
+    position: absolute;
+    left: calc(83px - var(--disc-avatar) - var(--disc-gap));
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .Page.DiscussionPage .CommentPost--fixedAvatar .Post-header .PostUser-badges:not(.LrBadgeLabels-list) {
+    display: none !important;
+  }
+
+  .Page.DiscussionPage .CommentPost--fixedAvatar .PostUser-badges--inSide {
+    display: block !important;
+    position: sticky;
+    top: var(--avocado-avatar-sticky-top);
+    left: auto;
+    margin-left: calc(5px - var(--disc-avatar) - var(--disc-gap));
+    align-self: start;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+}
+
+
+// Na prévia de edição o core põe avatar e badges direto no .Post-side, sem o
+// wrapper interno nem o --inSide; a regra absoluta acima jogaria o badge no
+// containing block errado.
+@media @tablet-up {
+  .Page.DiscussionPage .CommentPost.editing {
+    // Avatar à esquerda: centralizado, o badge ancorado no topo ficaria no vazio.
+    .Post-side {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+
+    // Absoluto porque não há .Post-side-inner para ancorar.
+    .Post-side > .PostUser-badges {
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      bottom: auto;
+      right: auto;
+      width: auto;
+      margin: 0;
+      padding: 0;
+      display: inline-flex;
+      pointer-events: auto;
+      z-index: 2;
+    }
+
+    .PostUser > .PostUser-badges {
+      position: static;
+      left: auto;
+      top: auto;
+      width: auto;
+      display: inline-flex;
+      pointer-events: auto;
+    }
+
+    .PostUser-badges--inSide { display: none !important; }
+  }
+
+  // Na posição padrão, o margin-left negativo no fluxo contava do fim do nome
+  // e o disco mudava de lugar. Absoluto, cai no mesmo canto do clone.
+  html:not(.avocado-badges--custom) .Page.DiscussionPage .CommentPost.editing .Post-header > .PostUser > .PostUser-badges {
+    position: absolute;
+    top: 0;
+    left: calc(-1 * (var(--disc-avatar) + var(--disc-gap)) - 15px);
+    margin-left: 0;
+  }
+}
+
+// Com badge-labels valendo no telefone, a extensão posiciona as pills no
+// header; o overlay as amontoaria num quadrado de 32px. O guarda vai nos dois
+// blocos para manter a especificidade relativa entre eles.
+html:not(.lrBadgeLabels--phone) {
+@media @phone {
+  // No phone o badge fica inline no header.
+  .Page.DiscussionPage .CommentPost.editing .PostUser .PostUser-badges {
+    position: static;
+    top: auto;
+    left: auto;
+    width: auto;
+    display: inline-flex;
+    pointer-events: auto;
+  }
+}
+
+// Com PostUser em display: contents, a lista é irmã do PostUser-name e o
+// Post-header a desalinharia; o li.item-user vira o containing block.
+@media @phone {
+  .Page.DiscussionPage .Post-header > ul > li.item-user {
+    position: relative;
+  }
+
+  .Page.DiscussionPage .PostUser .PostUser-badges {
+    position: absolute;
+    top: -12px;
+    left: 6px;
+    width: 32px;
+    pointer-events: none;
+  }
+}
+}
+
+.Page.DiscussionPage .Post-header {
+  margin-bottom: 10px;
+  border-bottom: none;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  position: relative;
+  overflow: visible;
+}
+
+// Sem isto os li fluem inline e quebram livremente.
+@media @phone {
+  .Page.DiscussionPage .Post-header {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0;
+  }
+
+  .Page.DiscussionPage .Post-header > ul {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    width: 100%;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  // Senão badges pequenos ficam no topo do li.
+  .Page.DiscussionPage .Post-header > ul > li {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+  }
+
+  .Page.DiscussionPage .Post-header > ul > li.item-user {
+    flex-shrink: 0;
+  }
+
+  .Page.DiscussionPage .Post-header > ul > li.item-meta {
+    flex-shrink: 1;
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  // O padding do .Button dobraria o vão; o gap da ul controla o espaçamento.
+  .Page.DiscussionPage .Post-header > ul > li.item-meta .Dropdown-toggle {
+    padding: 0;
+  }
+
+  // O margin-right: 5px do core soma com o gap da ul.
+  .Page.DiscussionPage .Post-header .PostUser-name .Avatar,
+  .Page.DiscussionPage .Post-header .PostUser-name .username,
+  .Page.DiscussionPage .Post-header .PostMeta time {
+    margin-right: 0;
+  }
+
+  // O margin-left: 5px soma com o gap da ul.
+  .Page.DiscussionPage .Post-header > ul > li.item-verified .VerifiedPopover-anchor,
+  .Page.DiscussionPage .Post-header > ul > li.item-verified > .VerifiedBadge {
+    margin-left: 0;
+  }
+}
+
+// Pela linha de base o selo ficava ~1px abaixo do centro do nome. Vale também
+// para a prévia da resposta.
+@media @tablet-up {
+  .Page.DiscussionPage .Post-header > ul > li.item-verified .VerifiedPopover-anchor,
+  .Page.DiscussionPage .Post-header > ul > li.item-verified > .VerifiedBadge {
+    position: relative;
+    top: -1px;
+  }
+}
+
+// display: contents põe nome e badges como itens do Post-header.
+.Page.DiscussionPage .PostUser {
+  display: contents;
+}
+
+.Page.DiscussionPage .PostUser-name {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.Page.DiscussionPage .PostUser-name > a,
+.Page.DiscussionPage .PostUser-name .Link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  color: var(--disc-title);
+}
+
+.Page.DiscussionPage .PostUser-name .username {
+  font-weight: 700;
+  font-size: 14px;
+  font-family: @font-sans;
+  color: var(--disc-title);
+  text-decoration: none;
+}
+
+.Page.DiscussionPage .PostUser-name > a:hover,
+.Page.DiscussionPage .PostUser-name .Link:hover {
+  text-decoration: underline;
+}
+
+// No desktop o online é a borda verde do avatar do Post-side.
+.Page.DiscussionPage .PostUser-name .UserOnline {
+  display: none !important;
+}
+
+@media @phone {
+  .Page.DiscussionPage .PostUser-name a:has(.UserOnline) .Avatar {
+    .avocado-online-ring(2px);
+  }
+}
+
+.Page.DiscussionPage .PostUser-name + .PostMeta::before {
+  content: "·";
+  color: var(--disc-muted);
+  font-size: 13px;
+  margin-right: 2px;
+}
+
+
+.Page.DiscussionPage .PostMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: @font-sans;
+  color: var(--disc-muted);
+  list-style: none;
+  padding: 0;
+
+  li {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  a:hover { color: var(--primary-color); }
+}
+
+@media @phone {
+  .Page.DiscussionPage .PostMeta {
+    margin-left: 0;
+  }
+}
+
+.Page.DiscussionPage .Post-body {
+  background: transparent;
+  border: none;
+  padding-bottom: 15px;;
+  line-height: 1.72;
+  font-family: @font-sans;
+  color: var(--disc-text);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+
+  p {
+    margin: 0 0 14px;
+    &:last-child { margin-bottom: 0; }
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: @font-sans;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--disc-title);
+    margin: 20px 0 8px;
+    &:first-child { margin-top: 0; }
+  }
+
+  h1 { font-size: 22px; }
+  h2 { font-size: 19px; }
+  h3 { font-size: 16px; }
+
+  ul, ol {
+    padding-left: 22px;
+    margin: 8px 0 14px;
+    li { margin-bottom: 4px; }
+  }
+
+  code {
+    font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+    font-size: 13px;
+    background: var(--avocado-surface-1);
+    border-radius: 4px;
+    padding: 2px 6px;
+    color: var(--disc-title);
+  }
+
+  // Também usado nos artigos do linkrobins/wiki.
+  .avocado-code-block();
+
+  blockquote {
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0 0 0 2.8em;
+    margin: 0.8em 0;
+    color: var(--muted-color);
+    font-style: italic;
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.1em;
+      width: 1.6em;
+      height: 1.6em;
+      background-color: var(--muted-color);
+      opacity: 0.35;
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M448 296c0 66.3-53.7 120-120 120h-8c-17.7 0-32-14.3-32-32s14.3-32 32-32h8c30.9 0 56-25.1 56-56v-8H320c-35.3 0-64-28.7-64-64V160c0-35.3 28.7-64 64-64h64c35.3 0 64 28.7 64 64v32 32 12zm-256 0c0 66.3-53.7 120-120 120H64c-35.3 0-64-28.7-64-64V288v-32V224C0 157.7 53.7 104 120 104h8c17.7 0 32 14.3 32 32s-14.3 32-32 32h-8c-30.9 0-56 25.1-56 56v8h64c35.3 0 64 28.7 64 64v8z'/%3E%3C/svg%3E");
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M448 296c0 66.3-53.7 120-120 120h-8c-17.7 0-32-14.3-32-32s14.3-32 32-32h8c30.9 0 56-25.1 56-56v-8H320c-35.3 0-64-28.7-64-64V160c0-35.3 28.7-64 64-64h64c35.3 0 64 28.7 64 64v32 32 12zm-256 0c0 66.3-53.7 120-120 120H64c-35.3 0-64-28.7-64-64V288v-32V224C0 157.7 53.7 104 120 104h8c17.7 0 32 14.3 32 32s-14.3 32-32 32h-8c-30.9 0-56 25.1-56 56v8h64c35.3 0 64 28.7 64 64v8z'/%3E%3C/svg%3E");
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-size: contain;
+      mask-size: contain;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    p { margin-bottom: 0.4em; }
+    & > *:last-child { margin-bottom: 0; }
+
+    .PostMention {
+      font-style: italic;
+      font-weight: 600;
+      color: var(--primary-color);
+      opacity: 0.75;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+  }
+
+  a {
+    color: var(--primary-color) !important;
+  }
+
+  img:not(.Avatar):not(.emoji):not([class*="avatar"]) {
+    max-width: 100%;
+    border-radius: 10px;
+    display: block;
+    margin: 12px 0;
+  }
+
+  // Dentro de [center] (div com `text-align: center`) as imagens voltam a ser
+  // inline-block: em bloco, sem margem auto, elas ignoravam o text-align e
+  // ficavam à esquerda. Inline-block centraliza uma fileira como grupo.
+  [style*="text-align:center"],
+  [style*="text-align: center"] {
+    img:not(.Avatar):not(.emoji):not([class*="avatar"]) {
+      display: inline-block;
+      margin: 4px;
+      vertical-align: middle;
+    }
+  }
+
+  // Favicon do rótulo de link interno: a classe extra ganha das regras de
+  // imagem (inclusive em [center]) e devolve o tamanho de texto do core.
+  img.UrlLink-favicon:not(.Avatar):not(.emoji):not([class*="avatar"]) {
+    display: inline;
+    max-width: none;
+    margin: 0;
+    border-radius: 2px;
+    vertical-align: middle;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--disc-border);
+    margin: 16px 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 12px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--disc-border);
+
+    th {
+      background: rgba(0, 0, 0, 0.03);
+      font-weight: 700;
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--disc-border);
+    }
+
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--disc-border);
+    }
+
+    tr:last-child td { border-bottom: none; }
+  }
+
+  .UserMention, .mention-user {
+    display: inline-block;
+    background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+    color: var(--primary-color);
+    border-radius: 4px;
+    padding: 0 4px;
+    font-weight: 700;
+    font-size: 0.9em;
+    text-decoration: none !important;
+
+    &:hover { background: color-mix(in srgb, var(--primary-color) 18%, transparent); }
+  }
+
+  .Spoiler {
+    background: #202126;
+    color: transparent;
+    border-radius: 4px;
+    padding: 0 4px;
+    cursor: pointer;
+    user-select: none;
+    transition: color var(--avocado-t-medium);
+
+    &.revealed,
+    &:hover { color: #e6e6eb; }
+  }
+}
+
+// O footer inline-block fica à esquerda das ações flutuantes; não mude o display.
+@media @tablet-up {
+  .Page.DiscussionPage .Post-footer {
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+}
+
+@media @phone {
+  .Page.DiscussionPage .Post-footer {
+    display: inline-block;
+    height: auto;        // o height: 0 do core causa overflow
+    margin-top: 5px;
+    margin-bottom: 20px;
+
+    .Post-likedBy {
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+  }
+}
+
+
+.Page.DiscussionPage .Post-footer .Button.Button--link,
+.Page.DiscussionPage .Post-footer .avocado-action-btn {
+  background: transparent;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  font-family: @font-sans;
+  color: var(--disc-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1;
+  transition: background var(--avocado-t-fast), color var(--avocado-t-fast);
+  text-decoration: none;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+
+  &:hover, &:focus {
+    background: #f0f0f4;
+    color: #4a4c58;
+  }
+
+  &:active { background: #e7e7ed; }
+
+  .Button-icon, i { font-size: 13px; line-height: 1; }
+
+  .Button-label, .avocado-action-label {
+    font-family: @font-sans;
+    font-weight: 800;
+  }
+}
+
+.Page.DiscussionPage .Post-footer .Button--liked {
+  color: var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+}
+
+.Page.DiscussionPage .Post-footer .avocado-share-done {
+  color: var(--primary-color);
+}
+
+
+
+.Page.DiscussionPage .EventPost {
+  background: transparent;
+  border: none;
+  border-bottom: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 6px 0;
+  margin: 0;
+
+  .Post-container {
+    display: grid;
+    grid-template-columns: var(--disc-avatar) 1fr;
+    gap: var(--disc-gap);
+    align-items: center;
+  }
+
+  .Post-side {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--disc-avatar);
+    flex-shrink: 0;
+  }
+
+  .EventPost-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(143, 143, 149, 0.10);
+    color: var(--disc-muted);
+    font-size: 13px;
+    font-style: normal;
+  }
+
+  .Post-header { display: none !important; }
+  .Post-footer { display: none !important; }
+  .Post-main   { padding-left: 0; }
+
+  .Post-body {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 2px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--disc-muted);
+    line-height: 1.5;
+
+    p { margin: 0 0 2px; &:last-child { margin: 0; } }
+
+    a {
+      color: var(--disc-muted);
+      text-decoration: none;
+      font-weight: 700;
+      &:hover { color: var(--primary-color); }
+    }
+
+    .TagLabel {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+    }
+  }
+}
+
+
+.Page.DiscussionPage .PostStream-loadMore {
+  text-align: center;
+  padding: 24px 0 8px;
+
+  .Button {
+    border-radius: 100px;
+    font-weight: 700;
+    padding: 10px 24px;
+    font-size: 13px;
+    background: #f0f0f4;
+    color: #50525e;
+    border: none;
+    box-shadow: none;
+
+    &:hover { background: #e7e7ed; }
+  }
+}
+
+.Page.DiscussionPage .Page-sidebar {
+  font-family: @font-sans;
+
+  p, span, a, button, label {
+    font-family: @font-sans;
+  }
+}
+
+.Page.DiscussionPage .Page-sidebar .SplitDropdown {
+  gap: 0;
+  // Sem overflow: hidden, que corta o toggle no mobile.
+
+  .SplitDropdown-button {
+    border-radius: 16px 0 0 16px;
+    border-right: 1px solid rgba(255, 255, 255, 0.3);
+    border-top: none;
+    border-bottom: none;
+    border-left: none;
+  }
+
+  > .Dropdown {
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  .Dropdown-toggle.Button--primary {
+    border-radius: 0;
+    border: none;
+    flex-shrink: 0;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    // No phone o core deixa o botão transparente com a cor de controle do header;
+    // não sobrescreva background/color aqui.
+  }
+}
+
+// No Flarum 2 o grupo é `.ButtonGroup.Dropdown--split`. Mesma especificidade
+// das regras do core que zeram os cantos internos; ganha pela ordem. No phone o
+// "Responder" fica no cabeçalho, onde a regra de lá o mantém reto.
+.Page.DiscussionPage .Page-sidebar .Dropdown--split {
+  > .SplitDropdown-button {
+    border-radius: 999px 0 0 999px;
+    padding-left: 18px;
+  }
+
+  // O respiro compensa a curva.
+  > .Dropdown-toggle {
+    border-radius: 0 999px 999px 0;
+    padding-right: 6px;
+  }
+
+  // Com uma ação só a seta some. O !important responde ao do core em
+  // `.Dropdown--split.itemCount1 .Button`.
+  &.itemCount1 > .SplitDropdown-button {
+    border-radius: 999px !important;
+    padding-right: 18px;
+  }
+}
+
+// O botão transparente do core some sobre o nav branco, e o colored ainda
+// troca --header-control-color; fundo primário com ícone branco sempre contrasta.
+@media @phone {
+  .Page.DiscussionPage .DiscussionPage-nav .App-primaryControl .Dropdown-toggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-color) !important;
+    color: #fff !important;
+    opacity: 1 !important;
+    border-radius: 0 !important;
+  }
+  // Duas regras do core escondem ícone e seta com especificidade 2; estes
+  // seletores têm 5.
+  .Page.DiscussionPage .DiscussionPage-nav .App-primaryControl .Dropdown-toggle .icon,
+  .Page.DiscussionPage .DiscussionPage-nav .App-primaryControl .Dropdown-toggle .Button-icon {
+    display: block !important;
+    color: #fff !important;
+  }
+  .Page.DiscussionPage .DiscussionPage-nav .App-primaryControl .Dropdown-toggle .Button-caret {
+    display: none !important;
+  }
+}
+
+.Page.DiscussionPage .Page-sidebar .Scrubber {
+  .Scrubber-index {
+    font-family: @font-sans;
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--disc-title);
+  }
+
+  .Scrubber-description {
+    font-family: @font-sans;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--disc-muted);
+  }
+
+  .Scrubber-first, .Scrubber-last {
+    font-family: @font-sans;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.6;
+  }
+
+  .Scrubber-bar { border-radius: 4px; }
+}
+
+// O .App-titleControl força a cor do header em todos os descendentes.
+@media @phone {
+  .PostStreamScrubber .Dropdown-menu {
+    color: var(--text-color);
+
+    .Scrubber-index, .Scrubber-first, .Scrubber-last {
+      color: var(--text-color);
+    }
+
+    .Scrubber-description {
+      color: var(--muted-color);
+    }
+
+    .Button {
+      color: var(--link-color);
+    }
+  }
+}
+
+.Page.DiscussionPage .AvocadoPost-opBadge {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  vertical-align: middle;
+  background: rgba(0, 0, 0, 0.05);
+  color: #8f9097;
+  font-size: 9px;
+  font-weight: 900;
+  font-family: @font-sans;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 5px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.TypingUsersContainer {
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+
+  margin: 0 0 12px 0;
+  min-height: 28px; // reserva espaço para o layout não pular
+  display: flex;
+  align-items: center;
+
+  @media @phone {
+    margin-bottom: 8px;
+  }
+
+  .TypingUsers {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+    padding: 6px 14px 6px 10px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-color) 8%, var(--body-bg, #fff));
+    border: 1px solid color-mix(in srgb, var(--primary-color) 18%, transparent);
+    color: color-mix(in srgb, var(--primary-color) 80%, var(--text-color, #111));
+    font-family: @font-sans;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 6px color-mix(in srgb, var(--primary-color) 12%, transparent);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    // O <i> segue como âncora flex; o glifo some e os pontos são desenhados aqui.
+    > i.fas {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 14px;
+      &::before { content: ''; display: none; }
+
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0; right: 0; top: 50%;
+        height: 4px;
+        // Animar o background-position troca o ponto aceso sem DOM extra.
+        background:
+          radial-gradient(circle at  4px 50%, currentColor 50%, transparent 55%) no-repeat,
+          radial-gradient(circle at 11px 50%, currentColor 50%, transparent 55%) no-repeat,
+          radial-gradient(circle at 18px 50%, currentColor 50%, transparent 55%) no-repeat;
+        opacity: 0.55;
+        transform: translateY(-50%);
+        animation: AvocadoTyping-dots 1.2s ease-in-out infinite;
+      }
+    }
+  }
+
+  &.TypingUsersContainer-active .TypingUsers {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  // Ocioso: discreto, sem competir com o conteúdo acima do composer.
+  &:not(.TypingUsersContainer-active) .TypingUsers {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    color: var(--muted-color);
+    opacity: 0.7;
+    transform: none;
+    > i.fas::after { animation: none; opacity: 0.4; }
+  }
+}
+
+@keyframes AvocadoTyping-dots {
+  0%, 100% { opacity: 0.35; }
+  20%      { opacity: 1;    }
+  60%      { opacity: 0.6;  }
+}
+
+// O core põe um divisor ::after entre itens do PostStream; junto do CTA o
+// próprio card já separa.
+.PostStream-item:has(+ .PostStream-afterFirstPost)::after,
+.PostStream-afterFirstPost::after,
+.PostStream-item:has(+ .PostStream-avocadoCta)::after,
+.PostStream-avocadoCta::after {
+  display: none;
+}
+
+.AvocadoPostCta-wrapper {
+  margin: 12px 0;
+
+  @media @tablet-up {
+    padding-left: var(--avatar-column-width);
+    padding-right: var(--post-padding);
+  }
+}
+
+.AvocadoPostCta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 16px 24px;
+  text-align: center;
+  background: color-mix(in srgb, var(--primary-color) 6%, transparent);
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--primary-color) 15%, transparent);
+}
+
+.AvocadoPostCta-text {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: @font-sans;
+  color: var(--disc-title);
+}
+
+.AvocadoPostCta-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.AvocadoPostCta-or {
+  font-size: 12px;
+  color: var(--disc-muted);
+}
+
+.AvocadoPostCta-btn {
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: @font-sans;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+  transition: background var(--avocado-t-fast), color var(--avocado-t-fast);
+
+  &--login {
+    background: var(--primary-color);
+    color: #fff;
+
+    &:hover { background: color-mix(in srgb, var(--primary-color) 85%, #000); }
+  }
+
+  &--signup {
+    background: transparent;
+    color: var(--primary-color);
+    border: 1.5px solid var(--primary-color);
+
+    &:hover { background: color-mix(in srgb, var(--primary-color) 8%, transparent); }
+  }
+}
+
+@media @phone {
+  .AvocadoPostCta {
+    flex-direction: column;
+  }
+
+  .AvocadoPostCta-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+// Links externos viram uma pílula com cadeado que abre o login.
+.AvocadoGuestLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  vertical-align: middle;
+  background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary-color) 25%, transparent);
+  border-radius: 4px;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: 0.85em;
+  font-weight: 600;
+  line-height: 1;
+  padding: 2px 7px 2px 5px;
+  transition: background 0.12s;
+  white-space: nowrap;
+
+  &:hover {
+    background: color-mix(in srgb, var(--primary-color) 20%, transparent);
+  }
+
+  .fa-lock { font-size: 0.8em; }
+}
+
+.AvocadoGuestLink-label {
+  font-family: @font-sans;
+}
+
+// Mantido no JS para os dados; não aparece na UI.
+.AvocadoSidebar-stats {
+  display: none;
+}
+
+
+
+// Estilo "threads": o OP vira um card e as respostas um grupo recuado. O JS
+// injeta a linha de tags, o título e a classe avocado-threads.
+
+.avocado-threads.Page.DiscussionPage {
+
+  .DiscussionHero {
+    background: transparent;
+    &::before { display: none; }
+  }
+
+  .DiscussionHero .container { padding: 0; }
+
+  .DiscussionHero-inner {
+    padding: 16px 0 16px !important;
+    &.has-deco-icon,
+    &.has-two-deco-icons { padding-right: 0 !important; }
+  }
+
+  .DiscussionHero-pills,
+  .DiscussionHero-title,
+  .DiscussionHero-meta,
+  .DiscussionHero-decorationsContainer { display: none !important; }
+
+  .DiscussionHero-nav { margin-bottom: 0; }
+
+  .DiscussionHero-back {
+    width: auto !important;
+    height: 34px !important;
+    border-radius: 999px !important;
+    padding: 0 13px !important;
+    background: var(--avocado-surface-1, #f4f4f7) !important;
+    backdrop-filter: none;
+    color: var(--disc-title, #202126) !important;
+    gap: 7px;
+    font: 800 12px/1 @font-sans;
+
+    &:hover {
+      opacity: 1 !important;
+      background: color-mix(in srgb, var(--avocado-surface-1, #f4f4f7) 50%, #d8d8e0) !important;
+      color: var(--primary-color) !important;
+    }
+  }
+
+  .DiscussionHero-back-label {
+    font: 800 12px/1 @font-sans;
+  }
+
+  .PostStream > .PostStream-item:first-child > .CommentPost {
+    border: 1px solid var(--avocado-border-subtle, #eaeaf0);
+    border-radius: 21px;
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+
+  @media @tablet-up {
+    .PostStream > .PostStream-item:first-child > .CommentPost {
+      --disc-avatar: 44px;
+    }
+  }
+
+  .PostStream > .PostStream-item:first-child > .CommentPost .Post-header {
+    margin-bottom: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-bottom: none;
+  }
+
+  .PostStream > .PostStream-item:first-child > .CommentPost .PostUser-name .username {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .PostStream > .PostStream-item:first-child > .CommentPost .PostMeta {
+    margin-left: 0 !important;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .AvocadoThreads-tagRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 4px 0 8px;
+  }
+
+  .AvocadoThreads-title {
+    display: block;
+    font: 900 32px/1.15 @font-sans;
+    letter-spacing: -0.5px;
+    color: var(--disc-title, #202126);
+    margin: 0 0 10px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .PostStream > .PostStream-item:first-child > .CommentPost .Post-body {
+    font-size: 17px;
+    line-height: 1.5;
+    padding-bottom: 0;
+    margin-bottom: 14px;
+  }
+
+  .PostStream > .PostStream-item:first-child > .CommentPost .Post-footer {
+    display: flex !important;
+    align-items: center;
+    height: auto !important;
+    overflow: visible !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    border-top: 1px solid var(--disc-border, #f0f0f4);
+    padding-top: 14px;
+    gap: 14px;
+  }
+
+  .PostStream > .PostStream-item:first-child > .CommentPost .Post-actions {
+    float: none;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .PostStream > .PostStream-item:first-child > .CommentPost .Post-likedBy {
+    display: none;
+  }
+
+  .PostStream > .PostStream-item:first-child > .CommentPost .Post-footer {
+    .Button.Button--link,
+    .avocado-action-btn {
+      padding: 0 !important;
+      border-radius: 0 !important;
+      background: none !important;
+      border: 0 !important;
+      font-size: 13px !important;
+      font-weight: 800 !important;
+      gap: 6px;
+      color: var(--disc-muted) !important;
+      transition: color 0.12s ease !important;
+
+      &:hover, &:focus {
+        background: none !important;
+        color: var(--disc-title) !important;
+      }
+
+      i { font-size: 13px; }
+    }
+
+    .Button--liked {
+      color: #e84393 !important;
+      background: none !important;
+
+      .fas, .far { color: #e84393 !important; }
+
+      &:hover { background: none !important; color: #e84393 !important; }
+    }
+  }
+
+  @media @phone {
+    .PostStream > .PostStream-item:first-child > .CommentPost {
+      padding: 14px;
+    }
+  }
+
+  .PostStream > .PostStream-item:not(:first-child) {
+    margin-left: 20px;
+    border-left: 2px solid var(--avocado-border-soft, #f0f0f4);
+    padding-left: 20px;
+    margin-bottom: 2px;
+  }
+
+  .PostStream > .PostStream-item:not(:first-child) > .CommentPost {
+    border-radius: 10px;
+    padding: 10px 8px;
+    transition: background 0.12s;
+
+    &:hover { background: var(--avocado-surface-1, #f4f4f7); }
+  }
+
+  @media @tablet-up {
+    .PostStream > .PostStream-item:not(:first-child) > .CommentPost {
+      --disc-avatar: 28px;
+    }
+  }
+
+  .PostStream > .PostStream-item:not(:first-child) > .CommentPost .Post-side .Avatar {
+    border-width: 1.5px;
+    box-shadow: none;
+  }
+
+  .PostStream > .PostStream-item:not(:first-child) > .CommentPost .Post-header {
+    margin-bottom: 3px;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .PostStream > .PostStream-item:not(:first-child) > .CommentPost .PostUser-name .username {
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .PostStream > .PostStream-item:not(:first-child) > .CommentPost .PostMeta {
+    margin-left: 0 !important;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .PostStream > .PostStream-item:not(:first-child) > .CommentPost .Post-body {
+    font-size: 15px;
+    line-height: 1.45;
+    padding-bottom: 4px;
+  }
+
+  .PostStream > .PostStream-item:not(:first-child) > .CommentPost .Post-footer {
+    display: flex !important;
+    align-items: center;
+    height: auto !important;
+    overflow: visible !important;
+    margin-top: 4px !important;
+    margin-bottom: 0 !important;
+    gap: 14px;
+  }
+
+  .PostStream > .PostStream-item:not(:first-child) > .CommentPost .Post-actions {
+    float: none;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .PostStream > .PostStream-item:not(:first-child) > .CommentPost .Post-likedBy {
+    display: none;
+  }
+
+  .PostStream > .PostStream-item:not(:first-child) > .CommentPost .Post-footer {
+    .Button.Button--link,
+    .avocado-action-btn {
+      padding: 0 !important;
+      border-radius: 0 !important;
+      background: none !important;
+      border: 0 !important;
+      font-size: 11px !important;
+      font-weight: 800 !important;
+      gap: 5px;
+      color: var(--disc-muted) !important;
+      transition: color 0.12s ease !important;
+
+      &:hover, &:focus {
+        background: none !important;
+        color: var(--disc-title) !important;
+      }
+
+      i { font-size: 12px; }
+    }
+  }
+
+  .PostStream > .PostStream-item:not(:first-child) > .EventPost {
+    border-radius: 8px;
+    padding: 4px 8px;
+  }
+
+  @media @phone {
+    .PostStream > .PostStream-item:not(:first-child) {
+      margin-left: 12px;
+      padding-left: 12px;
+    }
+
+    // O CSS base esconde o Post-side no phone.
+    .PostStream > .PostStream-item:not(:first-child) > .CommentPost .Post-side {
+      display: flex !important;
+    }
+  }
+}
+
+// Vale para o painel do drawer no mobile e para a sidebar no tablet/desktop.
+
+.DiscussionPage .DiscussionList,
+.App-drawer .DiscussionList {
+
+  background: #f4f4f7;
+  padding: 10px 10px 20px;
+
+  &-discussions > li {
+    list-style: none;
+    margin: 0 0 6px;
+  }
+
+  .DiscussionListItem {
+    position: relative;
+    background: #fff;
+    border: 1px solid #eaeaf0;
+    border-radius: 14px;
+    margin: 0;
+    transition: box-shadow 0.18s ease, border-color 0.18s ease;
+    overflow: visible;
+
+    &:hover {
+      border-color: #d8d8e4;
+      box-shadow: 0 4px 14px rgba(26, 26, 36, 0.07);
+    }
+
+    &.active {
+      border-color: var(--primary-color) !important;
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 18%, transparent) !important;
+    }
+
+    .DiscussionListItem-content {
+      display: flex;
+      align-items: flex-start;
+      padding: 11px 12px 11px 11px !important;
+      gap: 0;
+      overflow: visible;
+      border-radius: 14px;
+    }
+
+    .DiscussionListItem-author {
+      flex-shrink: 0;
+      margin-right: 10px;
+      float: none;
+
+      .Avatar {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px;
+        border-radius: 50% !important;
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        background-color: var(--avatar-bg) !important;
+        box-shadow: none !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+
+      .DiscussionListItem-badges {
+        position: absolute;
+        right: -6px;
+        top: -3px;
+        margin: 0;
+        float: none;
+
+        .Badge {
+          --size: 18px;
+          width: var(--size);
+          height: var(--size);
+          line-height: var(--size);
+          font-size: 9px;
+        }
+      }
+    }
+
+    .DiscussionListItem-main {
+      flex: 1;
+      min-width: 0;
+      padding: 0;
+      margin: 0;
+    }
+
+    .DiscussionListItem-title {
+      font-family: @font-sans;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--heading-color, var(--home-title)) !important;
+      line-height: 1.35;
+      margin: 0 0 5px;
+      white-space: normal;
+      text-align: left;
+      .avocado-line-clamp(2);
+    }
+
+    &--unread .DiscussionListItem-title::after {
+      --size: 7px;
+      content: "";
+      display: inline-block;
+      width: var(--size);
+      height: var(--size);
+      border-radius: 50%;
+      background: var(--primary-color);
+      margin-left: 5px;
+      margin-bottom: 1px;
+      vertical-align: middle;
+    }
+
+    .DiscussionListItem-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 3px;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 11.5px;
+      color: #8f9097;
+      text-align: left;
+
+      li { margin: 0; list-style: none; }
+    }
+
+    .item-tags {
+      text-align: left;
+      width: 100%;
+
+      .TagsLabel {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      .TagLabel {
+        font-size: 10.5px;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 2px 8px 2px 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        line-height: 1.6;
+        flex-shrink: 0;
+        white-space: nowrap;
+
+        .TagLabel-icon { font-size: 9px; }
+
+        &:nth-child(n+4) {
+          display: none !important;
+        }
+      }
+    }
+
+    .item-terminalPost {
+      color: #8f9097;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.4;
+      text-align: left;
+
+      .username { color: #43454e; font-weight: 600; }
+      .icon { font-size: 9px; margin-right: 2px; }
+    }
+
+    .item-excerpt {
+      font-size: 11px;
+      color: #a0a0ac;
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin: 0;
+      text-align: left;
+    }
+
+    .DiscussionListItem-stats {
+      flex-shrink: 0;
+      align-self: flex-start;
+      margin-left: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .DiscussionListItem-stats-item {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      color: #a0a0ac;
+      font-size: 11.5px;
+      font-weight: 600;
+      margin: 0;
+
+      .DiscussionListItem-stats-item-icon { font-size: 12px; }
+    }
+
+    // Centrado no que sobra abaixo do contador. `transform: none` desfaz o
+    // translateY(-50%) da lista principal, que aqui subiria o botão sobre o contador.
+    .DiscussionListItem-controls {
+      position: absolute;
+      top: 30px;
+      bottom: 0;
+      right: 8px;
+      height: 30px;
+      margin-block: auto;
+      transform: none;
+      z-index: 2;
+
+      .Dropdown-toggle {
+        color: #b0b0bc;
+        border-radius: 8px;
+        padding: 4px 7px;
+        line-height: 1;
+        font-size: 14px;
+
+        &:hover { color: #43454e; background: #f0f0f4; }
+      }
+    }
+  }
+
+  .DiscussionList-loadMore .Button {
+    width: 100%;
+    border-radius: 999px;
+    border: 1px solid #eaeaf0;
+    background: #fff;
+    color: #43454e;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 0;
+    margin-top: 4px;
+
+    &:hover {
+      background: #f4f4f7;
+      border-color: #d8d8e4;
+    }
+  }
+}

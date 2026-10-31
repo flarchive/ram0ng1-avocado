@@ -1,0 +1,195 @@
+// Badges de grupo como cápsula com rótulo, sem depender de extensão. O rótulo
+// vem de `content: attr(aria-label)`, que o `.Badge` do core já carrega, então
+// vale para qualquer badge que siga a convenção.
+//
+// `--custom` na raiz liga a camada: na posição 'default' nenhuma classe é
+// posta e nada aqui se aplica. Só do tablet para cima.
+
+@media @tablet-up {
+  .avocado-badges--custom .Page.DiscussionPage .PostUser-badges .Badge {
+    width: auto;
+    max-width: 100%;
+    height: 20px;
+    margin-left: 0; // desfaz o encavalamento do `badges--packed`
+    padding: 0 9px;
+    gap: 5px;
+    border-radius: 999px;
+    box-shadow: none;
+    font: 800 11px/1 @font-sans;
+
+    .Badge-icon {
+      font-size: 10.5px;
+      flex-shrink: 0;
+    }
+
+    // O rótulo precisa poder encolher: na coluna do avatar a cápsula tem teto de largura.
+    &::after {
+      content: attr(aria-label);
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  // O tema posiciona a lista de forma absoluta sobre o avatar; com a cápsula ela
+  // volta ao fluxo, ao lado do nome.
+  .avocado-badges--custom .Page.DiscussionPage .Post-header .PostUser-badges {
+    position: static;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    gap: 6px;
+    margin: 0 0 0 8px;
+    padding: 0; // desfaz o padding-inline-start do `badges--packed`
+    white-space: nowrap;
+    pointer-events: auto;
+    // O `float: left` e `width: 64px` do core cortam a cápsula.
+    float: none;
+    width: auto;
+    text-align: left;
+
+    > li {
+      display: inline-flex;
+    }
+
+    // A regra de display abaixo é !important e passaria por cima do `.badges:empty`
+    // do core.
+    &:empty {
+      display: none !important;
+    }
+  }
+
+  .avocado-badges--custom .Page.DiscussionPage .CommentPost--fixedAvatar .PostUser-badges--inSide {
+    display: none !important;
+  }
+
+  .avocado-badges--custom .Page.DiscussionPage .CommentPost--fixedAvatar .Post-header .PostUser-badges:not(:empty) {
+    display: inline-flex !important;
+  }
+
+  // `.PostUser` é `display: contents`, então nome e badges são filhos diretos do li.
+  // Virando coluna, o baseline do cabeçalho segue alinhando pela linha do nome.
+  .avocado-badges--custom.avocado-badges--below .Page.DiscussionPage .Post-header li.item-user {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  // `--custom` repetido para empatar com a regra do cabeçalho acima; sem ele o
+  // `margin-left: 8px` de lá venceria.
+  .avocado-badges--custom.avocado-badges--below .Page.DiscussionPage .Post-header .PostUser-badges {
+    margin-left: 0;
+  }
+
+  // A prévia ao vivo não tem o `li.item-user` em volta.
+  .avocado-badges--custom.avocado-badges--below .Page.DiscussionPage .CommentPost.editing .Post-header > .PostUser {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
+
+// Só no desktop: a cápsula precisa de uns 150px. A lista é o clone `--inSide`
+// que o JS injeta no `.Post-side` (o <ul> do cabeçalho não pode ser movido por
+// CSS), então exige o "Fixed avatar effect" ligado.
+@media @desktop-up {
+  // O `html` sobe a especificidade para (0,4,1) e ganha do DiscussionEditorial.less
+  // (0,3,1) sem depender da ordem de import.
+  html.avocado-badges--custom.avocado-badges--side .Page.DiscussionPage {
+    // Comporta uma cápsula comum ("Admin" mede ~71px); nomes maiores ganham
+    // reticências. Mais larga, a foto centrada deixava o nome longe dela.
+    --disc-side-col: 120px;
+
+    // Vão menor para nome e foto lerem como um bloco só.
+    --disc-gap: 12px;
+  }
+
+  .avocado-badges--custom.avocado-badges--side .Page.DiscussionPage .CommentPost:not(.ReplyPlaceholder) {
+    .Post-container {
+      grid-template-columns: var(--disc-side-col) 1fr;
+    }
+
+    // Sem o avatar fixo o tema não dá display a estes elementos, e a foto ficava
+    // encostada à esquerda.
+    .Post-side {
+      width: var(--disc-side-col);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .Post-side-inner {
+      display: flex;
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+  }
+
+  // O EventPost desenha o próprio grid; sem isto o ícone dele ficaria na coluna
+  // antiga, fora do eixo dos avatares.
+  .avocado-badges--custom.avocado-badges--side .Page.DiscussionPage .EventPost {
+    .Post-container {
+      grid-template-columns: var(--disc-side-col) 1fr;
+    }
+
+    .Post-side {
+      width: var(--disc-side-col);
+    }
+  }
+
+  // 0,6,0 para ganhar do `display: none !important` das outras posições.
+  .avocado-badges--custom.avocado-badges--side .Page.DiscussionPage .CommentPost .PostUser-badges--inSide {
+    display: flex !important;
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    pointer-events: auto;
+    z-index: auto;
+  }
+
+  // Vale também para a prévia ao vivo, que ganha o mesmo clone.
+  .avocado-badges--custom.avocado-badges--side .Page.DiscussionPage .CommentPost .Post-header .PostUser-badges {
+    display: none !important;
+  }
+
+  // O nome do grupo segue no `aria-label` (tooltip e nome acessível).
+  html.avocado-badges--custom.avocado-badges--side.avocado-badges--side-icons .Page.DiscussionPage {
+    --disc-side-col: 100px;
+  }
+
+  .avocado-badges--custom.avocado-badges--side.avocado-badges--side-icons .Page.DiscussionPage .CommentPost .PostUser-badges--inSide {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .avocado-badges--custom.avocado-badges--side.avocado-badges--side-icons .Page.DiscussionPage .PostUser-badges--inSide .Badge {
+    width: 20px;
+    padding: 0;
+    justify-content: center;
+
+    &::after {
+      content: none;
+    }
+  }
+}
+
+// linkrobins/badge-labels faz o mesmo em JS; com ela ligada esta camada se
+// cala para não desenhar rótulo sobre rótulo.
+html.lrBadgeLabels {
+  .Page.DiscussionPage .PostUser-badges .Badge::after {
+    content: none;
+  }
+}

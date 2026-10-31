@@ -1,0 +1,103 @@
+// Bloco de código das páginas de leitura (posts e wiki), com barra no topo
+// para o botão de copiar que o JS injeta.
+.avocado-code-block() {
+  pre {
+    --pre-bg:          #f8f8fa;
+    --pre-text:        #24292e;
+    --pre-border:      rgba(0, 0, 0, 0.09);
+    --pre-header-bg:   rgba(0, 0, 0, 0.035);
+    --pre-header-border: rgba(0, 0, 0, 0.07);
+    --pre-label:       rgba(36, 41, 46, 0.62);
+
+    position: relative;
+    background: var(--pre-bg);
+    color: var(--pre-text);
+    border: 1px solid var(--pre-border);
+    border-radius: 12px;
+    padding: 38px 18px 16px;  // espaço para a barra do topo
+    overflow-x: auto;
+    margin: 14px 0;
+    font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.6;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 32px;
+      background: var(--pre-header-bg);
+      border-bottom: 1px solid var(--pre-header-border);
+      border-radius: 12px 12px 0 0;
+      pointer-events: none;
+    }
+
+    // O rótulo só existe quando o autor declara a linguagem.
+    &[data-code-lang]::before {
+      content: attr(data-code-lang);
+      padding: 0 44px 0 14px;  // espaço para o botão de copiar
+      font-family: @font-mono;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 32px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--pre-label);
+    }
+
+    code {
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      color: inherit;
+    }
+}
+
+pre .avocado-code-copy {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--pre-text);
+  opacity: 0.4;
+  font-size: 11px;
+  cursor: pointer;
+  transition: opacity var(--avocado-t-fast), background var(--avocado-t-fast);
+  z-index: 1;
+  padding: 0;
+
+  &:hover {
+    opacity: 0.85;
+    background: rgba(0, 0, 0, 0.07);
+  }
+
+  &--copied {
+    opacity: 1;
+    color: #2ea043;
+  }
+}
+}
+
+.avocado-code-block-dark() {
+  --pre-bg:            #0d1117;
+  --pre-text:          #e6edf3;
+  --pre-border:        rgba(255, 255, 255, 0.08);
+  --pre-header-bg:     rgba(255, 255, 255, 0.04);
+  --pre-header-border: rgba(255, 255, 255, 0.07);
+  --pre-label:         rgba(230, 237, 243, 0.62);
+
+  .avocado-code-copy { color: var(--pre-text); }
+  .avocado-code-copy:hover { background: rgba(255, 255, 255, 0.08); }
+}

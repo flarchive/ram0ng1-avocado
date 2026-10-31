@@ -1,0 +1,67 @@
+// O colored.ts injeta --colored-color e --colored-contrast no <body>.
+// `colored--instant` suspende as transições por 2 frames para a cor trocar
+// sem animação na navegação.
+
+html.colored--instant,
+html.colored--instant * {
+  transition-duration: 0s !important;
+  animation-duration:  0s !important;
+}
+
+body.colored--active {
+  --primary-color: var(--colored-color);
+
+  --link-color: var(--colored-color);
+
+  --button-primary-bg:          var(--colored-color);
+  --button-primary-bg-hover:    color-mix(in srgb, var(--colored-color) 88%, black);
+  --button-primary-bg-active:   color-mix(in srgb, var(--colored-color) 78%, black);
+  --button-primary-bg-disabled: var(--colored-color);
+  --button-primary-color:       var(--colored-contrast);
+}
+
+// Sem o cabeçalho colorido, o core pinta os destaques do cabeçalho com
+// --header-color, gravado no :root como literal; trocar --primary-color não
+// chega nele.
+html:not([data-colored-header="true"]) body.colored--active {
+  --header-color: var(--colored-color);
+}
+
+// --item-tag-color vem inline por card. O fallback transparente evita que o
+// layout mude quando a tag não tem cor.
+
+html[data-avocado-colored-border="left"] {
+  .AvocadoHome-threadCard,
+  .AvocadoSearch-threadCard,
+  .DiscussionListItem {
+    border-left: 3px solid var(--item-tag-color, transparent);
+  }
+}
+
+html[data-avocado-colored-border="full"] {
+  .AvocadoHome-threadCard,
+  .AvocadoSearch-threadCard,
+  .DiscussionListItem {
+    border:        2px solid var(--item-tag-color, transparent);
+    border-radius: var(--border-radius);
+  }
+}
+
+// Só com o "Colored header" do Flarum ligado e os destaques ativos.
+
+html[data-colored-header="true"] body.colored--active {
+  --header-bg:            var(--colored-color);
+  --header-color:         var(--colored-contrast);
+  --header-control-bg:    rgba(0, 0, 0, 0.15);
+  --header-control-color: var(--colored-contrast);
+
+  --header-colored-color:              var(--colored-contrast);
+  --header-colored-control-bg:         rgba(0, 0, 0, 0.15);
+  --header-colored-control-color:      var(--colored-contrast);
+  --header-colored-control-bg-shaded:  rgba(0, 0, 0, 0.25);
+  --header-colored-control-bg-fadedin: rgba(0, 0, 0, 0.20);
+
+  .App-titleControl > .Button {
+    color: var(--primary-color) !important;
+  }
+}

@@ -1,0 +1,44 @@
+<?php
+
+/*
+ * This file is part of ramon/avocado.
+ *
+ * Copyright (c) 2026 Ramon.
+ *
+ * For the full copyright and license information, please view the LICENSE.md
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace Ramon\Avocado\Middleware;
+
+use Flarum\Http\RequestUtil;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Ramon\Avocado\Support\SupportEvents;
+
+/**
+ * Guarda o ator do request da API para os ganchos de modelo que não recebem
+ * request nenhum (a linha do tempo dos tickets do support). Entra depois
+ * dos middlewares de autenticação do core, então o ator já está resolvido.
+ */
+class RememberActor implements MiddlewareInterface
+{
+    public function __construct(
+        protected SupportEvents $events
+    ) {
+    }
+
+    #[\Override]
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        $actor = RequestUtil::getActor($request);
+
+        $this->events->rememberActor($actor->isGuest() ? null : (int) $actor->id);
+
+        return $handler->handle($request);
+    }
+}
