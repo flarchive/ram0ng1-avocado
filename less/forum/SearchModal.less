@@ -1,0 +1,622 @@
+// GlobalSearch do Flarum 2 como diálogo estilo spotlight: abas em pílula, ESC
+// como fechar e rodapé com atalhos (injetado pelo JS).
+
+// Só com o SearchModal ativo, para os outros modais manterem o chrome padrão.
+// A classe no body substitui um body:has(.ModalManager …), reavaliado a cada
+// mutação do DOM.
+body.avocado-backdrop--search .Modal-backdrop {
+  background: rgba(15, 15, 20, 0.42) !important;
+  backdrop-filter: blur(4px);
+  opacity: 1 !important;
+}
+
+// Ancorado no topo e limitado a 640px.
+.Modal.SearchModal.Modal--flat {
+  max-width: 640px !important;
+  width: 100%;
+  margin: 80px auto 16px !important;
+
+  animation: avocadoSearchPop 0.22s cubic-bezier(.2, .9, .3, 1.1);
+
+  .Modal-content {
+    border-radius: 18px !important;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.18);
+    border: 0;
+  }
+
+  // O ESC na linha do input substitui o botão de fechar.
+  .Modal-close {
+    display: none !important;
+  }
+
+  .Modal-header {
+    display: none !important;
+  }
+
+  .Modal-body {
+    padding: 0 !important;
+  }
+
+  .Modal-divider {
+    display: none !important;
+  }
+}
+
+@keyframes avocadoSearchPop {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media @phone {
+  .Modal.SearchModal.Modal--flat {
+    max-width: 100% !important;
+    margin: 0 !important;
+    height: 100vh;
+
+    .Modal-content {
+      border-radius: 0 !important;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+}
+
+.SearchModal {
+  &-form {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--avocado-border-subtle, #eaeaf0);
+
+    > .Input {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      height: auto;
+      min-width: 0;
+    }
+
+    .Input-prefix-icon,
+    .Input-icon {
+      position: static !important;
+      color: var(--muted-color);
+      font-size: 16px;
+      flex-shrink: 0;
+      margin: 0 !important;
+      padding: 0 !important;
+      height: auto !important;
+      width: auto !important;
+      pointer-events: none;
+      background: transparent !important;
+    }
+
+    .Input-clear,
+    .Button.Input-clear {
+      display: none !important;
+    }
+
+    // O FormControl traz raio e padding que brigam com o layout.
+    input.SearchModal-input,
+    .SearchModal-input,
+    input[type="search"].FormControl {
+      flex: 1;
+      width: 100%;
+      border: 0 !important;
+      border-radius: 0 !important;
+      outline: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      font-family: @font-sans !important;
+      font-size: 18px !important;
+      font-weight: 500 !important;
+      color: var(--text-color) !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      height: auto !important;
+      line-height: 1.3 !important;
+      -webkit-appearance: none;
+      appearance: none;
+
+      &::placeholder {
+        color: var(--avocado-muted-placeholder, #b2b2bb);
+      }
+
+      &::-webkit-search-decoration,
+      &::-webkit-search-cancel-button,
+      &::-webkit-search-results-button,
+      &::-webkit-search-results-decoration {
+        display: none;
+      }
+    }
+
+    .LoadingIndicator {
+      flex-shrink: 0;
+    }
+
+    // O realce de gambits do core usa limite de palavra ASCII e erra com acentos
+    // ("discussão:39" realça "ão:39"). Só o realce some; os filtros continuam.
+    .SearchModal-visual-wrapper {
+      display: none;
+    }
+  }
+
+  .Tabs {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .Tabs-nav {
+    display: flex;
+    gap: 4px;
+    padding: 10px 22px;
+    border-bottom: 1px solid var(--avocado-border-soft, #f0f0f4);
+    margin: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
+
+    > .Button,
+    > .Button.Button--link {
+      border: 0 !important;
+      background: transparent !important;
+      padding: 8px 14px !important;
+      border-radius: 999px !important;
+      font: 800 12px/1 @font-sans !important;
+      color: var(--muted-color) !important;
+      cursor: pointer;
+      transition: background var(--avocado-t-fast), color var(--avocado-t-fast);
+      display: inline-flex !important;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      box-shadow: none !important;
+      text-transform: none;
+      letter-spacing: 0;
+
+      .Button-icon,
+      > i.icon {
+        font-size: 11px !important;
+        margin: 0 !important;
+        color: inherit !important;
+      }
+
+      .Button-label {
+        font: inherit !important;
+        color: inherit !important;
+      }
+
+      &:hover {
+        color: var(--text-color) !important;
+        background: var(--control-bg) !important;
+      }
+
+      // --button-primary-* já tem contraste automático, e o colored troca por tag.
+      &[active],
+      &.active {
+        background: var(--button-primary-bg, var(--primary-color)) !important;
+        color: var(--button-primary-color, #fff) !important;
+        --button-color: var(--button-primary-color, #fff);
+        --link-color: var(--button-primary-color, #fff);
+      }
+    }
+  }
+
+  &-tabs-content {
+    max-height: 380px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 8px 12px;
+
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-thumb {
+      background: var(--avocado-border-subtle, #eaeaf0);
+      border-radius: 2px;
+    }
+  }
+
+  &-section {
+    margin: 0;
+    padding: 0;
+  }
+
+  .Dropdown-header {
+    font: 800 10px/1 @font-sans !important;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--avocado-muted-icon, #a2a3ac) !important;
+    padding: 10px 10px 6px !important;
+    margin: 0 !important;
+    list-style: none;
+  }
+
+  &-fullPage {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    background: none;
+
+    .LinkButton,
+    .Button {
+      display: flex !important;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      font: 700 14px/1.2 @font-sans !important;
+      color: var(--primary-color) !important;
+      padding: 10px !important;
+      border-radius: 10px !important;
+      background: transparent !important;
+      border: 0 !important;
+      transition: background var(--avocado-t-fast);
+
+      .Button-icon,
+      > i.icon {
+        color: var(--primary-color) !important;
+        font-size: 14px;
+      }
+
+      &:hover {
+        background: var(--avocado-surface-1, #f4f4f7) !important;
+        text-decoration: none;
+      }
+    }
+  }
+
+  &-results {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    background: none;
+    display: flex;
+    flex-direction: column;
+
+    mark {
+      background: rgba(240, 178, 19, 0.32);
+      color: inherit;
+      padding: 0 2px;
+      border-radius: 3px;
+      font-weight: inherit;
+    }
+
+    .Dropdown-message {
+      padding: 30px;
+      text-align: center;
+      color: var(--muted-color);
+      font: 600 13px @font-sans;
+      list-style: none;
+
+      .InfoTile {
+        background: transparent;
+        border: 0;
+        padding: 0;
+        color: inherit;
+        font: inherit;
+        text-align: center;
+      }
+
+      .LoadingIndicator {
+        margin: 0 auto;
+      }
+    }
+
+    .DiscussionSearchResult,
+    .PostSearchResult,
+    .UserSearchResult {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      transition: background var(--avocado-t-fast);
+      cursor: pointer;
+
+      &:hover,
+      &.active {
+        background: var(--avocado-surface-1, #f4f4f7);
+        box-shadow: none;
+      }
+
+      > .DiscussionListItem,
+      > .MinimalDiscussionListItem {
+        margin: 0 !important;
+        padding: 10px !important;
+        border-radius: 10px;
+        background: transparent !important;
+        gap: 12px;
+        align-items: flex-start;
+        --discussion-list-item-bg-hover: transparent;
+        box-shadow: none !important;
+
+        &:hover { background: transparent !important; }
+
+        .DiscussionListItem-author,
+        .Avatar {
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+
+        .Avatar {
+          --size: 30px;
+          width: 30px;
+          height: 30px;
+          font-size: 12px;
+        }
+
+        .DiscussionListItem-controls,
+        .DiscussionListItem-count,
+        .DiscussionListItem-stub { display: none !important; }
+
+        .DiscussionListItem-title {
+          font: 800 14px/1.3 @font-sans !important;
+          color: var(--text-color) !important;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          margin: 0 !important;
+          padding: 0 !important;
+
+          a, > div {
+            color: inherit !important;
+            text-decoration: none;
+          }
+        }
+
+        .DiscussionListItem-info {
+          font: 500 12px/1.4 @font-sans !important;
+          color: var(--muted-color) !important;
+          margin: 2px 0 0 !important;
+          padding: 0 !important;
+          gap: 6px;
+          list-style: none;
+
+          li, > * {
+            list-style: none;
+            display: inline;
+          }
+
+          .username, strong {
+            color: var(--text-color);
+            font-weight: 700;
+          }
+        }
+      }
+    }
+
+    .UserSearchResult {
+      > a {
+        display: flex !important;
+        align-items: center;
+        gap: 12px;
+        padding: 10px !important;
+        border-radius: 10px;
+        background: transparent !important;
+        text-decoration: none !important;
+
+        &:hover { background: transparent !important; }
+
+        .Avatar {
+          --size: 30px;
+          width: 30px;
+          height: 30px;
+          font-size: 12px;
+          flex-shrink: 0;
+        }
+
+        .username {
+          font: 800 14px/1.3 @font-sans !important;
+          color: var(--text-color) !important;
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  &-options {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+
+    > li:not(.Dropdown-header) {
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font: 600 13px @font-sans;
+      color: var(--text-color);
+
+      &:hover, &.active {
+        background: var(--avocado-surface-1, #f4f4f7);
+      }
+    }
+  }
+}
+
+.Avocado-searchModal-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: 800 10px/1 @font-sans;
+  color: var(--muted-color);
+  border: 1px solid var(--avocado-border-subtle, #eaeaf0);
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: var(--avocado-surface-1, #f4f4f7);
+  min-width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  cursor: default;
+  user-select: none;
+  pointer-events: none;
+}
+
+button.Avocado-searchModal-kbd--close {
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background var(--avocado-t-fast), color var(--avocado-t-fast),
+              border-color var(--avocado-t-fast), transform var(--avocado-t-fast);
+
+  &:hover {
+    color: var(--text-color);
+    background: var(--control-bg);
+    border-color: var(--avocado-border-soft, #dfdfe6);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+}
+
+.Avocado-searchModal-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 22px;
+  border-top: 1px solid var(--avocado-border-soft, #f0f0f4);
+  background: var(--avocado-surface-1, #f4f4f7);
+  font: 700 11px/1 @font-sans;
+  color: var(--muted-color);
+  flex-wrap: wrap;
+  gap: 10px;
+
+  strong {
+    color: var(--text-color);
+  }
+
+  &-keys {
+    display: inline-flex;
+    gap: 6px;
+  }
+}
+
+// Espelha as linhas de resultado para a altura do modal não pular.
+.SearchModal-results--skeleton {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.Avocado-searchSkeleton {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 10px;
+
+  &-av {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: linear-gradient(90deg, #f0f0f4 25%, #e6e6eb 50%, #f0f0f4 75%);
+    background-size: 800px 100%;
+    animation: avocado-shimmer 1.4s infinite;
+  }
+
+  &-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  &-line {
+    height: 12px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #f0f0f4 25%, #e6e6eb 50%, #f0f0f4 75%);
+    background-size: 800px 100%;
+    animation: avocado-shimmer 1.4s infinite;
+    display: block;
+
+    &--title { width: 62%; height: 13px; }
+    &--meta  { width: 40%; height: 10px; }
+  }
+
+  // Escalonado para o shimmer não pulsar em sincronia.
+  &:nth-child(2) &-line--title { width: 78%; }
+  &:nth-child(2) &-line--meta  { width: 32%; }
+  &:nth-child(3) &-line--title { width: 50%; }
+  &:nth-child(3) &-line--meta  { width: 46%; }
+  &:nth-child(4) &-line--title { width: 70%; }
+  &:nth-child(4) &-line--meta  { width: 36%; }
+  &:nth-child(5) &-line--title { width: 56%; }
+  &:nth-child(5) &-line--meta  { width: 38%; }
+}
+
+[data-theme^=dark] {
+  body.avocado-backdrop--search .Modal-backdrop {
+    background: rgba(0, 0, 0, 0.55) !important;
+  }
+
+  .Modal.SearchModal.Modal--flat .Modal-content {
+    background: var(--body-bg);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  }
+
+  .SearchModal {
+    &-form { border-bottom-color: var(--avocado-border-subtle); }
+    .Tabs-nav { border-bottom-color: var(--avocado-border-soft); }
+
+    .Tabs-nav > .Button[active],
+    .Tabs-nav > .Button.active {
+      background: var(--button-primary-bg, var(--primary-color)) !important;
+      color: var(--button-primary-color, #fff) !important;
+    }
+
+    &-results {
+      .DiscussionSearchResult,
+      .PostSearchResult,
+      .UserSearchResult {
+        &:hover, &.active {
+          background: rgba(255, 255, 255, 0.04);
+        }
+      }
+    }
+  }
+
+  .Avocado-searchModal-kbd {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--avocado-border-subtle);
+    color: var(--muted-color);
+  }
+
+  .Avocado-searchModal-foot {
+    background: rgba(255, 255, 255, 0.04);
+    border-top-color: var(--avocado-border-soft);
+  }
+
+  .Avocado-searchSkeleton {
+    &-av,
+    &-line {
+      background: linear-gradient(90deg,
+        rgba(255, 255, 255, 0.05) 25%,
+        rgba(255, 255, 255, 0.10) 50%,
+        rgba(255, 255, 255, 0.05) 75%);
+      background-size: 800px 100%;
+    }
+  }
+}

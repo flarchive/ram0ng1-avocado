@@ -1,0 +1,939 @@
+// linkrobins/support. O tema não desenha coluna lateral em página de
+// extensão, então o JS devolve a sidebar dela (com "Novo ticket" e os filtros)
+// como barra abaixo do cabeçalho; sem isso não haveria como abrir um ticket.
+//
+// Os seletores levam duas classes para ganhar da folha da extensão (uma classe
+// só) sem depender da ordem de concatenação.
+
+// A extensão fixa um hex por status; como tokens, o escuro pode clarear
+// cada um (o hex original some sobre a tinta de 14%).
+
+:root {
+  --avocado-support-open:     #0f8ba3;
+  --avocado-support-progress: #a96d0c;
+  --avocado-support-awaiting: #7d4ba0;
+  --avocado-support-resolved: #1c8549;
+  --avocado-support-closed:   #6b7280;
+  --avocado-support-danger:   #c0392b;
+}
+
+[data-theme^=dark],
+body.dark-mode {
+  --avocado-support-open:     #4fc9de;
+  --avocado-support-progress: #e8a33d;
+  --avocado-support-awaiting: #c191dd;
+  --avocado-support-resolved: #5bd08a;
+  --avocado-support-closed:   #9aa3ab;
+  --avocado-support-danger:   #ef8b80;
+}
+
+.avocado-support-tint(@color) {
+  background: color-mix(in srgb, @color 14%, transparent);
+  color: @color;
+}
+
+.AvocadoSupport-toolbar {
+  .avocado-extension-toolbar();
+}
+
+// O tema já mostra o título no .AvocadoExtensionPage-header; o <h1> da
+// extensão o repetiria logo abaixo.
+
+.LinkRobinsSupport-page .LinkRobinsSupport-title {
+  display: none;
+}
+
+.LinkRobinsSupport-page {
+  .LinkRobinsSupport-header {
+    margin-bottom: 20px;
+  }
+
+  .LinkRobinsSupport-ticket-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--avocado-border-subtle);
+  }
+
+  // O menu de moderação ancorava no título removido; sobe para a linha do título do tema.
+  .LinkRobinsSupport-ticket-actions {
+    top: -56px;
+  }
+
+  @media @phone {
+    .LinkRobinsSupport-ticket-actions {
+      top: -44px;
+    }
+  }
+}
+
+.LinkRobinsSupport-page {
+  .LinkRobinsSupport-list {
+    .avocado-card(@border-radius);
+    background: var(--body-bg);
+    overflow: hidden;
+  }
+
+  .LinkRobinsSupport-row {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--avocado-border-soft);
+    transition: background var(--avocado-t-fast);
+
+    &:hover {
+      background: var(--avocado-surface-1);
+    }
+  }
+
+  .LinkRobinsSupport-row-subject {
+    font-weight: 700;
+    color: var(--heading-color, var(--text-color));
+  }
+
+  .LinkRobinsSupport-row-meta {
+    color: var(--muted-color);
+    font-size: 12px;
+  }
+
+  .LinkRobinsSupport-row-deletedBadge {
+    padding: 1px 8px;
+    border-radius: 999px;
+    color: var(--avocado-support-danger);
+    background: color-mix(in srgb, var(--avocado-support-danger) 12%, transparent);
+  }
+}
+
+.LinkRobinsSupport-page .LinkRobinsSupport-status {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+
+  &.is-open     { .avocado-support-tint(var(--avocado-support-open)); }
+  &.is-progress { .avocado-support-tint(var(--avocado-support-progress)); }
+  &.is-awaiting { .avocado-support-tint(var(--avocado-support-awaiting)); }
+  &.is-resolved { .avocado-support-tint(var(--avocado-support-resolved)); }
+  &.is-closed   { .avocado-support-tint(var(--avocado-support-closed)); }
+}
+
+// A extensão renderiza só a frase; o ícone entra por ::before.
+
+.LinkRobinsSupport-page .LinkRobinsSupport-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 56px 24px;
+  border: 1px dashed var(--avocado-border-chip);
+  border-radius: @border-radius;
+  background: var(--avocado-surface-2);
+  color: var(--muted-color);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+
+  &:before {
+    content: "\f1cd"; // fa-life-ring
+    font-family: "Font Awesome 7 Free", "Font Awesome 6 Free", "Font Awesome 5 Free";
+    font-weight: 900;
+    font-size: 40px;
+    line-height: 1;
+    opacity: 0.45;
+  }
+
+  &.LinkRobinsSupport-empty--blocked {
+    border-color: color-mix(in srgb, var(--avocado-support-danger) 35%, transparent);
+    background: color-mix(in srgb, var(--avocado-support-danger) 8%, transparent);
+    color: var(--avocado-support-danger);
+
+    &:before {
+      content: "\f05e"; // fa-ban
+    }
+  }
+}
+
+// No fim de um ticket o ícone repetiria o que o cabeçalho já diz.
+.LinkRobinsSupport-page .LinkRobinsSupport-replies + .LinkRobinsSupport-empty,
+.LinkRobinsSupport-page .LinkRobinsSupport-empty:has(.LinkRobinsSupport-reopenRow) {
+  padding: 28px 24px;
+
+  &:before {
+    display: none;
+  }
+}
+
+.LinkRobinsSupport-page {
+  .LinkRobinsSupport-ticket-meta {
+    color: var(--muted-color);
+    font-size: 13px;
+  }
+
+  .LinkRobinsSupport-decision {
+    .LinkRobinsSupport-decision-pending  { color: var(--avocado-support-progress); }
+    .LinkRobinsSupport-decision-accepted { color: var(--avocado-support-resolved); }
+    .LinkRobinsSupport-decision-rejected { color: var(--avocado-support-danger); }
+  }
+
+  .LinkRobinsSupport-staffBar {
+    padding: 12px 16px;
+    border: 1px solid var(--avocado-border-subtle);
+    border-radius: @border-radius;
+    background: var(--avocado-surface-2);
+  }
+
+  .LinkRobinsSupport-staffBar-statusSelect,
+  .LinkRobinsSupport-staffBtn {
+    border: 1px solid var(--avocado-border-chip);
+    border-radius: 999px;
+    background-color: var(--body-bg);
+    color: var(--text-color);
+
+    &:hover:not(:disabled),
+    &:focus {
+      border-color: var(--primary-color);
+    }
+  }
+
+  .LinkRobinsSupport-staffBar-statusSelect:focus {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 25%, transparent);
+  }
+
+  .LinkRobinsSupport-staffBar-assign {
+    border-left-color: var(--avocado-border-chip);
+  }
+
+  // Mesmo desenho do post na /d/. Os tokens --disc-* são os da discussão, e o
+  // DarkMode.less já os redefine.
+  --disc-bg:     #ffffff;
+  --disc-border: #f0f0f4;
+  --disc-text:   #43454e;
+  --disc-title:  #202126;
+  --disc-muted:  #8f9097;
+  --disc-avatar: 48px;
+  --disc-gap:    24px;
+
+  @media @tablet {
+    --disc-avatar: 40px;
+    --disc-gap:    18px;
+  }
+
+  @media @phone {
+    --disc-avatar: 36px;
+    --disc-gap:    12px;
+  }
+
+  .LinkRobinsSupport-replies {
+    gap: 0;
+    margin-bottom: 8px;
+  }
+
+  .LinkRobinsSupport-reply {
+    display: grid;
+    grid-template-columns: var(--disc-avatar) 1fr;
+    column-gap: var(--disc-gap);
+    align-items: start;
+    padding: 20px 0;
+    border: 0;
+    border-bottom: 1px solid var(--disc-border);
+    border-radius: 0;
+    background: transparent;
+
+    // O avatar (posto pelo JS) ocupa a coluna da esquerda inteira.
+    > *:nth-child(n + 2) {
+      grid-column: 2;
+    }
+
+    &:last-child {
+      border-bottom: 0;
+    }
+
+    &.is-internal {
+      padding: 16px;
+      margin: 6px 0;
+      border-radius: @border-radius;
+      border-bottom: 0;
+      background: color-mix(in srgb, var(--avocado-support-progress) 7%, transparent);
+      box-shadow: inset 3px 0 0 color-mix(in srgb, var(--avocado-support-progress) 55%, transparent);
+    }
+
+    &.is-deleted {
+      opacity: 0.6;
+    }
+  }
+
+  .AvocadoSupport-replySide {
+    grid-column: 1;
+    grid-row: 1 / span 3;
+    width: var(--disc-avatar);
+  }
+
+  .AvocadoSupport-replyAvatar.Avatar {
+    width: var(--disc-avatar);
+    height: var(--disc-avatar);
+    font-size: calc(var(--disc-avatar) * 0.35);
+    line-height: var(--disc-avatar);
+    border-radius: 999px;
+    border: 2px solid var(--avocado-online-ring);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+  }
+
+  .LinkRobinsSupport-reply-header {
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-family: @font-sans;
+  }
+
+  .LinkRobinsSupport-reply-author {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--disc-title);
+
+    a {
+      color: inherit;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .LinkRobinsSupport-reply-date {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--disc-muted);
+
+    &:before {
+      content: "·";
+      margin-right: 6px;
+    }
+  }
+
+  .LinkRobinsSupport-reply-edited {
+    font-size: 12px;
+    color: var(--disc-muted);
+  }
+
+  .LinkRobinsSupport-reply-actions {
+    margin-left: auto;
+    align-self: center;
+  }
+
+  .LinkRobinsSupport-reply-body {
+    line-height: 1.72;
+    font-family: @font-sans;
+    color: var(--disc-text);
+
+    p {
+      margin: 0 0 14px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .LinkRobinsSupport-reply-deletedBadge {
+    .avocado-support-tint(var(--avocado-support-danger));
+  }
+
+  .LinkRobinsSupport-reply-action--danger {
+    &,
+    &:hover,
+    &:focus {
+      color: var(--avocado-support-danger) !important;
+    }
+
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--avocado-support-danger) 8%, transparent) !important;
+    }
+  }
+
+  .LinkRobinsSupport-internalToggle {
+    color: var(--muted-color);
+  }
+
+  .LinkRobinsSupport-uploadStatus {
+    border-radius: @border-radius;
+    background: var(--avocado-surface-1);
+    color: var(--muted-color);
+  }
+}
+
+.LinkRobinsSupport-page {
+  .LinkRobinsSupport-categoryCard {
+    .avocado-card(@border-radius);
+    background: var(--body-bg);
+    padding: 16px 18px;
+
+    &:hover,
+    &:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 8px 24px rgba(26, 26, 36, 0.06);
+    }
+  }
+
+  .LinkRobinsSupport-categoryCard-name {
+    font-weight: 700;
+  }
+
+  .LinkRobinsSupport-categoryCard-desc,
+  .LinkRobinsSupport-pickerHint {
+    color: var(--muted-color);
+  }
+
+  .LinkRobinsSupport-chosenCategory {
+    background: var(--avocado-surface-1);
+    border: 1px solid var(--avocado-border-chip);
+  }
+
+  .LinkRobinsSupport-backBtn {
+    color: var(--muted-color);
+    font-size: 13px;
+    font-weight: 700;
+
+    &:hover,
+    &:focus {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+  }
+
+  .LinkRobinsSupport-form {
+    .avocado-card(@border-radius);
+    background: var(--body-bg);
+    padding: 20px;
+
+    .Form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--heading-color, var(--text-color));
+    }
+  }
+
+  .LinkRobinsSupport-form .FormControl {
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: var(--avocado-surface-1);
+    transition: border-color var(--avocado-t-fast), background var(--avocado-t-fast);
+
+    &:focus {
+      border-color: var(--primary-color);
+      background: var(--body-bg);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 14%, transparent);
+    }
+  }
+}
+
+// O core dimensiona o .ReplyPlaceholder para uma discussão (104px, avatar de
+// 64px); dentro de um formulário isso vira um bloco enorme.
+
+.LinkRobinsSupport-page {
+  .LinkRobinsSupport-composePreview .ReplyPlaceholder,
+  .LinkRobinsSupport-replyPrompt .ReplyPlaceholder {
+    min-height: 0;
+    padding: 12px 14px;
+    border: 1px dashed var(--avocado-border-chip);
+    border-radius: 12px;
+    background: var(--avocado-surface-1);
+    transition: border-color var(--avocado-t-fast), background var(--avocado-t-fast);
+
+    .Post-container {
+      grid-template-columns: 40px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .Post-avatar {
+      width: 36px;
+      height: 36px;
+      font-size: 18px;
+      line-height: 36px;
+    }
+
+    .Post-header {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--avocado-muted-label);
+    }
+
+    &:hover,
+    &:focus {
+      border-color: var(--primary-color);
+      background: var(--body-bg);
+    }
+  }
+
+  // Mesmo recuo da caixa que a prévia substitui, para o bloco não pular.
+  .LinkRobinsSupport-composePreview .CommentPost,
+  .LinkRobinsSupport-replyPrompt .CommentPost {
+    border: 1px solid var(--avocado-border-subtle);
+    background: var(--avocado-surface-2);
+    padding: 14px;
+
+    .Post-container {
+      grid-template-columns: 40px 1fr;
+      gap: 12px;
+    }
+
+    .Post-avatar {
+      width: 36px;
+      height: 36px;
+      font-size: 18px;
+      line-height: 36px;
+    }
+  }
+}
+
+// O botão "Novo ticket" abre o composer do fórum em vez da página de
+// categorias; categoria e assunto ficam no cabeçalho dele.
+
+// Cor da categoria (inline, só hexadecimal); sem ela, a do fórum.
+.AvocadoSupport-ticketComposer {
+  --avocado-support-cat: var(--primary-color);
+
+  // A barra do editor compensa a coluna do avatar com margem fixa (-105px);
+  // estreitá-la jogaria o botão de enviar para fora.
+  .ComposerBody-header {
+    margin-bottom: 10px;
+
+    // O core deita os <li> lado a lado, o que embaralha o cabeçalho.
+    > li {
+      display: block;
+      width: 100%;
+      margin: 0;
+      white-space: normal;
+    }
+  }
+}
+
+@media @phone {
+  .AvocadoSupport-composerSubject.FormControl {
+    font-size: 15px;
+  }
+}
+
+.AvocadoSupport-composerHeading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 2px 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--muted-color);
+
+  &-icon {
+    .avocado-flex-center();
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    font-size: 11px;
+    background: color-mix(in srgb, var(--avocado-support-cat, var(--primary-color)) 14%, transparent);
+    color: var(--avocado-support-cat, var(--primary-color));
+  }
+}
+
+.AvocadoSupport-composerSubject.FormControl {
+  width: 100%;
+  height: auto;
+  padding: 7px 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-color);
+
+  &::placeholder {
+    color: var(--avocado-muted-placeholder);
+    font-weight: 500;
+  }
+
+  &:focus {
+    border: 0;
+    background: none;
+    box-shadow: none;
+  }
+}
+
+.AvocadoSupport-composerCategoryRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--avocado-border-soft);
+}
+
+.AvocadoSupport-composerCategory--loading {
+  display: block;
+  width: 150px;
+  height: 30px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f0f0f4 25%, #e6e6eb 50%, #f0f0f4 75%);
+  background-size: 800px 100%;
+  animation: avocado-shimmer 1.4s infinite;
+}
+
+.AvocadoSupport-composerCategory {
+  flex: 0 0 auto;
+  max-width: 100%;
+
+  > .Dropdown-toggle.Button {
+    .avocado-pill-btn(30px; 13px; 12.5px);
+    max-width: 100%;
+    background: color-mix(in srgb, var(--avocado-support-cat, var(--primary-color)) 12%, transparent);
+    color: var(--avocado-support-cat, var(--primary-color));
+
+    .Button-label {
+      .avocado-truncate();
+    }
+
+    .Button-caret {
+      opacity: 0.7;
+      font-size: 11px;
+    }
+
+    &:hover,
+    &:focus {
+      background: color-mix(in srgb, var(--avocado-support-cat, var(--primary-color)) 20%, transparent);
+      color: var(--avocado-support-cat, var(--primary-color));
+    }
+  }
+}
+
+// As caixas já têm as classes reais; aqui só se desligam os estados
+// interativos e se dão medidas às linhas.
+
+.AvocadoSupport-skeletonRow,
+.AvocadoSupport-skeletonReply,
+.AvocadoSupport-skeletonCategory {
+  cursor: default;
+  pointer-events: none;
+}
+
+.LinkRobinsSupport-page .AvocadoSupport-skeletonRow {
+  &:hover {
+    background: none;
+  }
+
+  // Sem isto as barras se encostam: o recuo real vem de margens que um <div> vazio não tem.
+  .LinkRobinsSupport-row-main {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  // Comprimentos variados: cinco barras iguais parecem defeito.
+  &:nth-child(2n) .AvocadoSupport-skeletonLine--subject   { width: 34%; }
+  &:nth-child(3n) .AvocadoSupport-skeletonLine--subject   { width: 52%; }
+  &:nth-child(2n) .AvocadoSupport-skeletonLine--metaCat   { width: 74px; }
+  &:nth-child(3n) .AvocadoSupport-skeletonLine--metaUser  { width: 56px; }
+}
+
+.AvocadoSupport-skeletonMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.AvocadoSupport-skeletonTicket {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.AvocadoSupport-skeletonReply {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.AvocadoSupport-skeletonCategories {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.AvocadoSupport-skeletonCategory {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+
+  &-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: linear-gradient(90deg, #f0f0f4 25%, #e6e6eb 50%, #f0f0f4 75%);
+    background-size: 800px 100%;
+    animation: avocado-shimmer 1.4s infinite;
+  }
+
+  &-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+.AvocadoSupport-skeletonLine {
+  &--subject   { height: 16px; width: 46%; }                       // assunto do ticket
+  &--metaCat   { height: 11px; width: 90px; }                      // categoria
+  &--metaUser  { height: 11px; width: 70px; }                      // autor
+  &--metaDate  { height: 11px; width: 130px; }                     // data
+  &--status    { height: 22px; width: 84px; border-radius: 999px; flex-shrink: 0; } // selo
+  &--ticketMeta { height: 14px; width: 60%; }                      // linha de meta do ticket
+  &--body      { height: 13px; width: 92%; }                       // corpo da resposta
+  &--bodyShort { height: 13px; width: 64%; }
+  &--catName   { height: 15px; width: 180px; }                     // nome da categoria
+  &--catDesc   { height: 12px; width: 78%; }                       // descrição
+}
+
+@media @phone {
+  .AvocadoSupport-skeletonLine {
+    &--subject { width: 72%; }
+    &--metaDate { width: 100px; }
+  }
+}
+
+// O JS monta o mesmo .DiscussionHero da /d/ pelo slot `hero`; aqui só o que
+// o ticket tem de diferente.
+
+.Page.AvocadoSupport-ticketPage {
+  font-family: @font-sans;
+
+  // O App.less esconde .Page-hero nas páginas de extensão com quatro classes;
+  // aqui são cinco.
+  &.IndexPage.LinkRobinsSupport-page .Page-hero {
+    display: block !important;
+  }
+
+  @media @tablet-up {
+    .Page-content {
+      margin-top: 24px;
+    }
+  }
+
+  // O hero já mostra título, status e autor; sobra o menu de moderação.
+  .LinkRobinsSupport-ticket-header {
+    display: flex;
+    justify-content: flex-end;
+    min-height: 0;
+    margin: 0 0 4px;
+    padding: 0;
+    border: 0;
+
+    .LinkRobinsSupport-ticket-meta,
+    .LinkRobinsSupport-decision {
+      display: none;
+    }
+
+    .LinkRobinsSupport-ticket-actions {
+      position: static;
+      top: auto;
+      right: auto;
+    }
+
+    // Leitor comum não vê o menu.
+    &:empty {
+      display: none;
+    }
+  }
+
+  .LinkRobinsSupport-staffBar {
+    margin-bottom: 8px;
+  }
+
+  .LinkRobinsSupport-replyPrompt {
+    margin-top: 16px;
+  }
+}
+
+.AvocadoSupport-hero {
+  .LinkRobinsSupport-status,
+  .AvocadoSupport-heroDecision {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .AvocadoSupport-heroDeleted {
+    color: var(--avocado-support-danger);
+  }
+
+  .AvocadoSupport-heroDecision {
+    &--pending  { color: var(--avocado-support-progress); }
+    &--accepted { color: var(--avocado-support-resolved); }
+    &--rejected { color: var(--avocado-support-danger); }
+  }
+
+  // Mesma especificidade da regra de status acima; esta vem depois e ganha.
+  .LinkRobinsSupport-status {
+    &.is-open     { color: var(--avocado-support-open);     background: rgba(255, 255, 255, 0.92); }
+    &.is-progress { color: var(--avocado-support-progress); background: rgba(255, 255, 255, 0.92); }
+    &.is-awaiting { color: var(--avocado-support-awaiting); background: rgba(255, 255, 255, 0.92); }
+    &.is-resolved { color: var(--avocado-support-resolved); background: rgba(255, 255, 255, 0.92); }
+    &.is-closed   { color: var(--avocado-support-closed);   background: rgba(255, 255, 255, 0.92); }
+  }
+}
+
+// Eventos de status entre as respostas, no desenho do EventPost.
+
+.Page.AvocadoSupport-ticketPage {
+  .AvocadoSupport-event {
+    display: grid;
+    grid-template-columns: var(--disc-avatar) 1fr;
+    column-gap: var(--disc-gap);
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--disc-border);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  .AvocadoSupport-event-side {
+    .avocado-flex-center();
+    width: var(--disc-avatar);
+  }
+
+  .AvocadoSupport-event-icon {
+    .avocado-flex-center();
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(143, 143, 149, 0.1);
+    color: var(--disc-muted);
+    font-size: 13px;
+  }
+
+  .AvocadoSupport-event-info {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: @font-sans;
+    color: var(--disc-muted);
+    line-height: 1.5;
+
+    time {
+      color: var(--disc-muted);
+
+      &:before {
+        content: "·";
+        margin-right: 6px;
+      }
+    }
+  }
+
+  .AvocadoSupport-event-user {
+    color: var(--disc-title);
+    font-weight: 700;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+  }
+
+  .AvocadoSupport-event-info .LinkRobinsSupport-status {
+    padding: 2px 9px;
+    font-size: 10px;
+  }
+
+  .AvocadoSupport-timeGap {
+    padding: 18px 0 18px calc(var(--disc-avatar) + var(--disc-gap));
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--disc-muted);
+    border-bottom: 1px solid var(--disc-border);
+
+    @media @phone {
+      padding-left: 0;
+    }
+  }
+}
+
+// O tema tira o avatar do grid no desktop contando com o recuo da página de
+// discussão; fora dela o avatar cairia sobre o texto.
+
+@media @desktop-up {
+  .LinkRobinsSupport-page .CommentPost:not(.ReplyPlaceholder) {
+    padding: 14px;
+    border-radius: @border-radius;
+
+    .Post-container {
+      display: grid;
+    }
+
+    .Post-side {
+      position: static;
+      left: auto;
+      top: auto;
+      width: auto;
+    }
+  }
+}
+
+// Os tokens já trocam no escuro; sobra o brilho dos esqueletos desta folha.
+
+[data-theme^=dark],
+body.dark-mode {
+  // Os mesmos valores que o DarkMode.less dá ao .Page.DiscussionPage.
+  .LinkRobinsSupport-page {
+    --disc-bg:     var(--body-bg);
+    --disc-border: rgba(255, 255, 255, 0.08);
+    --disc-text:   var(--text-color);
+    --disc-title:  var(--heading-color, #e8e9f2);
+    --disc-muted:  var(--muted-color);
+  }
+
+  .AvocadoSupport-skeletonCategory-icon,
+  .AvocadoSupport-composerCategory--loading {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.06) 25%,
+      rgba(255, 255, 255, 0.11) 50%,
+      rgba(255, 255, 255, 0.06) 75%
+    );
+    background-size: 800px 100%;
+  }
+
+  // No escuro o hover clareia a pílula em vez de escurecê-la.
+  .AvocadoSupport-toolbar .IndexPage-nav.sideNav .Dropdown--select .Dropdown-menu > li > a {
+    &:hover,
+    &:focus {
+      background: color-mix(in srgb, var(--avocado-surface-1) 70%, #fff);
+    }
+  }
+}

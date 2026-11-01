@@ -1,0 +1,380 @@
+// fof/reactions: seletor no estilo do Facebook.
+
+.Reactions {
+  display: inline-flex;
+  align-items: center;
+}
+
+// Qualquer ancestral posicionado com overflow ≠ visible corta o popup.
+// .Post-footer tem os contadores e .Post-actions o gatilho; os dois precisam.
+.Page.DiscussionPage .Post-actions,
+.Page.DiscussionPage .Post-actions > ul,
+.Page.DiscussionPage .Post-actions > ul > li,
+.Page.DiscussionPage .Post-footer,
+.Page.DiscussionPage .Post-footer > ul,
+.Page.DiscussionPage .Reactions,
+.Page.DiscussionPage .Reactions--react {
+  overflow: visible !important;
+  clip: auto !important;
+  clip-path: none !important;
+}
+
+.Page.DiscussionPage .Reactions--react {
+  position: relative !important;
+}
+
+.Page.DiscussionPage .Post-actions > ul > li {
+  vertical-align: middle !important;
+}
+
+// Altura própria para o bottom: 100% do popup cair no lugar certo.
+.Reactions .Reactions--react {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  position: relative;
+}
+
+.Reactions .Reactions--ShowReactions,
+.Reactions .Reactions--react .Reactions--ShowReactions {
+  float: none !important;
+  margin: 0 !important;
+  padding: 5px 10px !important;
+  text-decoration: none !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px;
+  height: auto !important;
+  border-radius: 8px !important;
+  border: none !important;
+  background: transparent !important;
+  color: var(--muted-color) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  font-family: @font-sans !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  transition: color var(--avocado-t-fast) !important;
+  box-sizing: border-box !important;
+  white-space: nowrap;
+
+  &:hover,
+  &:focus,
+  &:active {
+    background: transparent !important;
+    color: var(--primary-color) !important;
+    text-decoration: none !important;
+  }
+
+  &.active {
+    background: transparent !important;
+    color: var(--primary-color) !important;
+  }
+
+  // Só o <path>: o <rect> é um fundo transparente que vira um quadrado escuro
+  // se receber currentColor.
+  svg.button-react {
+    width: 20px !important;
+    height: 20px !important;
+    flex-shrink: 0;
+
+    path { fill: currentColor !important; }
+    rect { fill: none !important; }
+  }
+
+  .emoji, img.emoji {
+    width: 16px !important;
+    height: 16px !important;
+    flex-shrink: 0;
+  }
+
+  .reaction-icon,
+  .button-emoji {
+    font-size: 15px !important;
+    margin: 0 !important;
+    flex-shrink: 0;
+  }
+
+  .Button-label,
+  .Button-labelText {
+    display: contents !important;
+    margin: 0 !important;
+  }
+}
+
+.Reactions .CommentPost--Reactions {
+  position: absolute !important;
+  top: auto !important;
+  bottom: calc(100% + 10px) !important;
+  left: 50% !important;
+  right: auto !important;
+
+  max-width: none !important;
+  width: auto !important;
+  height: 54px !important;
+  padding: 3px !important;
+  box-sizing: border-box !important;
+
+  // Sem overflow visível os emojis da animação e o tooltip ::after são cortados.
+  overflow: visible !important;
+
+  border-radius: 100px !important;
+  background: var(--body-bg) !important;
+  color: var(--text-color) !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.13), 0 0 0 1px rgba(0, 0, 0, 0.06) !important;
+  line-height: 1 !important;
+  z-index: 9999 !important;
+
+  transform: translateX(-50%) translateY(8px) scale(0.92) !important;
+  transition: opacity 220ms ease, visibility 0s linear 220ms, transform 220ms cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+
+  // Ponte invisível: o popup não fecha no caminho do cursor até ele.
+  &::before {
+    content: '';
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 18px;
+    bottom: -18px;
+    left: 0;
+  }
+}
+
+.Reactions .Reactions--Ul {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  justify-content: flex-start !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  list-style: none !important;
+
+  > li {
+    display: flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+
+    > button.Button {
+      position: relative;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 48px !important;
+      height: 48px !important;
+      padding: 0 !important;
+      border: none !important;
+      background: transparent !important;
+      border-radius: 50%;
+      cursor: pointer !important;
+      overflow: visible;
+
+      // O .Button-label do core tem overflow: hidden e corta o emoji ampliado.
+      .Button-label,
+      .Button-labelText {
+        display: contents !important;
+        overflow: visible !important;
+        margin: 0 !important;
+      }
+
+      .emoji,
+      img.emoji {
+        width: 32px !important;
+        height: 32px !important;
+        display: block;
+        transform: scale(0.5) translateY(20px);
+        // Cresce para cima, sem cortar a base do popup.
+        transform-origin: bottom center;
+        transition: transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        will-change: transform;
+        margin: 0 !important;
+      }
+
+      .reaction-icon,
+      .button-emoji {
+        font-size: 26px !important;
+        margin: 0 !important;
+        display: block;
+        transform: scale(0.5) translateY(20px);
+        transform-origin: bottom center;
+        transition: transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        will-change: transform;
+      }
+
+      &::after {
+        content: attr(aria-label);
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.80);
+        color: #fff;
+        padding: 3px 9px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 120ms ease;
+        font-family: @font-sans;
+        line-height: 1.6;
+        z-index: 2;
+      }
+
+      &:hover,
+      &:focus {
+        background: transparent !important;
+
+        .emoji,
+        img.emoji,
+        .reaction-icon,
+        .button-emoji {
+          transform: scale(1.15) translateY(-4px) !important;
+          transition-delay: 0s !important;
+        }
+
+        &::after { opacity: 1; }
+      }
+    }
+  }
+}
+
+.Reactions .Reactions--react:hover .CommentPost--Reactions,
+.Reactions .CommentPost--Reactions.mobile-show {
+  // Mantém o translateX(-50%) para seguir centralizado.
+  transform: translateX(-50%) translateY(0) scale(1) !important;
+  transition: opacity 220ms ease, visibility 0s linear 0s, transform 220ms cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.Reactions .Reactions--react:hover .CommentPost--Reactions .Reactions--Ul,
+.Reactions .CommentPost--Reactions.mobile-show .Reactions--Ul {
+  > li:nth-child(1) > button { .emoji, img.emoji, .reaction-icon, .button-emoji { transform: scale(1) translateY(0); transition-delay: 0.00s; } }
+  > li:nth-child(2) > button { .emoji, img.emoji, .reaction-icon, .button-emoji { transform: scale(1) translateY(0); transition-delay: 0.06s; } }
+  > li:nth-child(3) > button { .emoji, img.emoji, .reaction-icon, .button-emoji { transform: scale(1) translateY(0); transition-delay: 0.12s; } }
+  > li:nth-child(4) > button { .emoji, img.emoji, .reaction-icon, .button-emoji { transform: scale(1) translateY(0); transition-delay: 0.18s; } }
+  > li:nth-child(5) > button { .emoji, img.emoji, .reaction-icon, .button-emoji { transform: scale(1) translateY(0); transition-delay: 0.24s; } }
+  > li:nth-child(6) > button { .emoji, img.emoji, .reaction-icon, .button-emoji { transform: scale(1) translateY(0); transition-delay: 0.30s; } }
+  > li:nth-child(n+7) > button { .emoji, img.emoji, .reaction-icon, .button-emoji { transform: scale(1) translateY(0); transition-delay: 0.34s; } }
+}
+
+// A extensão não exibe o contador quando é 1; o JS o injeta.
+.Reactions--reactions {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  vertical-align: unset !important;
+
+  .Button-label,
+  .Button-labelText {
+    display: contents !important;
+    margin: 0 !important;
+  }
+
+  .Button-emoji-parent {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px;
+    height: auto !important;
+    padding: 4px 8px 4px 6px !important;
+    border-radius: 100px !important;
+    box-sizing: border-box !important;
+    background: transparent !important;
+    border: none !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    font-family: @font-sans !important;
+    color: var(--muted-color) !important;
+    cursor: pointer !important;
+    transition: color var(--avocado-t-fast), background var(--avocado-t-fast) !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+
+    &:not(.disabled):hover {
+      color: var(--primary-color) !important;
+      background: color-mix(in srgb, var(--primary-color) 8%, transparent) !important;
+    }
+
+    &.active {
+      color: var(--primary-color) !important;
+      background: color-mix(in srgb, var(--primary-color) 10%, transparent) !important;
+    }
+
+    &.disabled {
+      cursor: default !important;
+      pointer-events: none !important;
+      opacity: 0.7;
+    }
+
+    .button-emoji { margin: 0 !important; }
+
+    .emoji, img.emoji {
+      width: 18px !important;
+      height: 18px !important;
+      flex-shrink: 0;
+    }
+
+    .reaction-icon {
+      font-size: 15px !important;
+      margin: 0 !important;
+      flex-shrink: 0;
+    }
+
+    .count {
+      margin: 0 !important;
+      font-weight: 400 !important;
+    }
+  }
+}
+
+// Aqui .Reactions envolve o botão direto, sem .Reactions--react no meio.
+.Reactions > .Reactions--ShowReactions {
+  img.emoji,
+  .emoji,
+  .reaction-icon {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 16px !important;
+    flex-shrink: 0;
+  }
+}
+
+.ReactionsModal .Modal-container {
+  margin: auto;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+@media @phone {
+  .Reactions .CommentPost--Reactions {
+    height: 46px !important;
+    padding: 2px !important;
+  }
+
+  .Reactions .Reactions--Ul > li > button.Button {
+    width: 40px !important;
+    height: 40px !important;
+
+    .emoji, img.emoji {
+      width: 24px !important;
+      height: 24px !important;
+    }
+
+    .reaction-icon, .button-emoji {
+      font-size: 21px !important;
+    }
+
+    &:hover, &:focus {
+      .emoji, img.emoji, .reaction-icon, .button-emoji {
+        transform: scale(1.1) translateY(-3px) !important;
+      }
+    }
+  }
+}

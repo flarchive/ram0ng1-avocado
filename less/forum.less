@@ -1,0 +1,34 @@
+// As @font-face ficam só no CSS crítico inline, com a mesma URL do preload;
+// declarar aqui com outra URL baixaria a fonte duas vezes.
+//
+// O Flarum compila esta folha, as folhas por extensão (só com a extensão ativa)
+// e o forum-tail.less no mesmo parser, nessa ordem: variáveis e mixins daqui
+// valem nas outras.
+@import "common/common.less";
+
+@import "forum/App.less";
+@import "forum/DiscussionList.less";
+@import "forum/Hero.less";
+@import "forum/Post.less";
+@import "forum/TagsPage.less";
+@import "forum/sideNav.less";
+@import "forum/HomePage.less";
+@import "forum/DiscussionPage.less";
+@import "forum/Composer.less";
+@import "forum/ComposerPreview.less";
+@import "forum/ReplyTo.less";
+// Depois do DiscussionPage.less para ganhar da cascata padrão.
+@import "forum/DiscussionEditorial.less";
+// Por último: a posição "side" alarga --disc-side-col, que o eixo da corrente lê.
+@import "forum/PostBadges.less";
+@import "forum/AuthModal.less";
+@import "forum/DiscussionModals.less";
+@import "forum/TagsModal.less";
+@import "forum/UserPage.less";
+@import "forum/SearchPage.less";
+@import "forum/SearchModal.less";
+// Vale sem o flarum/messages.
+@import "forum/DiscussionListPane.less";
+@import "forum/CodeHighlight.less";
+@import "forum/UrlLink.less";
+// Aqui entram as folhas por extensão registradas no extend.php.

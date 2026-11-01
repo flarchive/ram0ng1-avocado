@@ -1,0 +1,127 @@
+<?php
+
+/*
+ * This file is part of ramon/avocado.
+ *
+ * Copyright (c) 2026 Ramon.
+ *
+ * For the full copyright and license information, please view the LICENSE.md
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace Ramon\Avocado\Content;
+
+use Flarum\Api\Client;
+use Flarum\Extension\ExtensionManager;
+use Flarum\Frontend\Document;
+use Flarum\Settings\SettingsRepositoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
+
+/**
+ * Completa a lista da home no payload do boot (`app.data.avocadoHomeFeed`) só
+ * quando as 20 discussões da index não bastam (as do showcase não contam); sem
+ * isso a lista cresceria na tela depois do primeiro paint.
+ */
+class PreloadHomeFeed
+{
+    /** Mesmas rotas do PreloadShowcase: a home vive na raiz e em /all. */
+    private const ROUTES = ['default', 'index'];
+
+    /** Espelha o SHOWCASE_INCLUDE do HomeState (sem posts — ver PreloadShowcase). */
+    private const INCLUDES = ['user', 'lastPostedUser', 'tags'];
+
+    /** Tamanho da página que a index já entrega no boot (padrão do Flarum). */
+    private const INDEX_PAGE_SIZE = 20;
+
+    /** Teto do request, igual ao do front (HomeState › fillFeed). */
+    private const MAX_LIMIT = 50;
+
+    public function __construct(
+        protected Client $api,
+        protected SettingsRepositoryInterface $settings,
+        protected ExtensionManager $extensions,
+    ) {
+    }
+
+    public function __invoke(Document $document, ServerRequestInterface $request): void
+    {
+        if (! in_array($request->getAttribute('routeName'), self::ROUTES, true)) {
+            return;
+        }
+
+        // Página 2+ da index ou busca: a home não é o que está na tela.
+        $query = $request->getQueryParams();
+        if (! empty($query['q']) || (int) ($query['page'] ?? 1) > 1) {
+            return;
+        }
+
+        $count = max(1, min(20, (int) ($this->settings->get('avocado.home_feed_count') ?: 5)));
+        $showcase = $this->settings->get('avocado.showcase_enabled', false)
+            ? max(1, min(5, (int) ($this->settings->get('avocado.showcase_count') ?: 5)))
+            : 0;
+
+        // No pior caso todas as discussões do showcase estão entre as 20 da
+        // index; se ainda assim sobram `count`, a página do boot já basta.
+        $needed = $count + $showcase;
+        if ($needed <= self::INDEX_PAGE_SIZE) {
+            return;
+        }
+
+        $doc = $this->fetch($request, min(self::MAX_LIMIT, $needed), empty($query['sort']));
+
+        if (! $doc || ! ($doc['data'] ?? [])) {
+            return;
+        }
+
+        $document->payload['avocadoHomeFeed'] = [
+            'data'     => $doc['data'],
+            'included' => $doc['included'] ?? [],
+        ];
+    }
+
+    /**
+     * @return array{data?: list<array<string, mixed>>, included?: list<array<string, mixed>>}|null
+     */
+    private function fetch(ServerRequestInterface $request, int $limit, bool $defaultIndexOrder): ?array
+    {
+        $params = [
+            // `tags` só existe com o flarum/tags ligado; relação desconhecida é 400.
+            'include' => implode(',', $this->extensions->isEnabled('flarum-tags')
+                ? self::INCLUDES
+                : array_diff(self::INCLUDES, ['tags'])),
+            'page'    => ['limit' => $limit],
+        ];
+
+        // "Atividade recente" pede a ordem explícita; "populares" é pontuado no
+        // front sobre a ordem padrão, a mesma da index.
+        if ($this->settings->get('avocado.home_feed_sort') === 'latest') {
+            $params['sort'] = '-lastPostedAt';
+        } elseif ($defaultIndexOrder) {
+            // Mesma ordem da index, pulando as 20 que já estão no apiDocument do boot.
+            $params['page'] = [
+                'offset' => self::INDEX_PAGE_SIZE,
+                'limit'  => $limit - self::INDEX_PAGE_SIZE,
+            ];
+        }
+
+        try {
+            $body = (string) $this->api
+                ->withoutErrorHandling()
+                // Roda como o visitante real: o boot nunca entrega no payload
+                // uma discussão que ele não veria pela API.
+                ->withParentRequest($request)
+                ->withQueryParams($params)
+                ->get('/discussions')
+                ->getBody();
+
+            $decoded = json_decode($body, true);
+
+            return is_array($decoded) ? $decoded : null;
+        } catch (\Throwable) {
+            // Preload é otimização: se falhar, o front cai no fetch async.
+            return null;
+        }
+    }
+}

@@ -1,0 +1,31 @@
+.Button {
+  border: 1px solid transparent;
+  transition: background-color var(--avocado-t-fast), border-radius var(--avocado-t-fast);
+}
+
+.Button--dashed {
+  border: 1px dashed;
+  --control-bg: transparent;
+}
+
+// Toggles flat (notificações, flags) e só-ícone mantêm o ícone: no só-ícone
+// ele É o botão (ex.: .WardrobeSwitcher), e sumir com ele deixa a pílula vazia.
+.Dropdown-toggle:not(.Button--flat):not(.Button--icon) {
+  .Button-icon {
+    display: none !important;
+  }
+}
+
+.WardrobeSwitcher .Dropdown-toggle .Button-icon {
+  display: inline-block !important;
+}
+
+.Dropdown-toggle.Button--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  .Button-caret {
+    margin: 0;
+  }
+}

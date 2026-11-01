@@ -1,0 +1,157 @@
+// Reaproveita as classes .AvocadoHome-tagPicker* (HomePage.less); aqui só o
+// que muda por estar num modal.
+
+// O backdrop com blur vem de `body.avocado-backdrop--dim` (DiscussionModals.less).
+
+.Modal.AvocadoTagsModal {
+  max-width: 480px;
+  animation: avocadoModalPop 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+
+  .Modal-content {
+    border: 0;
+    border-radius: 18px;
+    background: var(--body-bg);
+    box-shadow: var(--shadow-lifted);
+    overflow: hidden;
+  }
+
+  .Modal-header {
+    padding: 18px 20px 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+
+    h3 {
+      margin: 0;
+      padding-right: 34px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+  }
+
+  .Modal-close {
+    top: 12px;
+    right: 12px;
+
+    .Button {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border-radius: 50%;
+      color: var(--muted-color);
+
+      &:hover,
+      &:focus-visible {
+        background: var(--avocado-surface-1);
+        color: var(--text-color);
+      }
+    }
+  }
+
+  .Modal-body {
+    padding: 2px 20px 16px;
+    background: transparent;
+  }
+
+  .AvocadoTagsModal-discussion {
+    margin: 0 0 12px;
+    padding-right: 24px;
+    font-size: 13px;
+    color: var(--muted-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .AvocadoTagsModal-selected {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: 26px;
+    margin-bottom: 10px;
+  }
+
+  .AvocadoTagsModal-empty {
+    font-size: 13px;
+    color: var(--muted-color);
+  }
+
+  // O dropdown vira o corpo do modal: sem flutuar, sem moldura.
+  .AvocadoHome-tagPickerDropdown {
+    position: static;
+    min-width: 0;
+    max-height: none;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .AvocadoHome-tagPickerSearch {
+    margin-bottom: 6px;
+    padding: 8px 12px;
+    border-radius: 10px;
+  }
+
+  .AvocadoHome-tagPickerList {
+    max-height: 46vh;
+    margin: 0 -6px;
+    padding: 0 6px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .AvocadoHome-tagPickerItem-desc {
+    max-width: 50%;
+  }
+
+  .AvocadoHome-tagPickerBypass {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--muted-color);
+    cursor: pointer;
+  }
+
+  .AvocadoTagsModal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--avocado-border-soft);
+
+    .Button {
+      height: 34px;
+      padding: 0 16px;
+      border-radius: var(--border-radius);
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+
+    .AvocadoTagsModal-cancel {
+      --button-bg: transparent;
+      --button-bg-hover: var(--avocado-surface-1);
+      --button-bg-active: var(--avocado-surface-1);
+    }
+
+    .Button--primary:disabled {
+      opacity: 0.45;
+    }
+  }
+}
+
+@media @phone {
+  .Modal.AvocadoTagsModal {
+    animation: none;
+
+    .AvocadoHome-tagPickerList {
+      max-height: none;
+    }
+  }
+}

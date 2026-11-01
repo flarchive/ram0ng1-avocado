@@ -1,0 +1,181 @@
+<?php
+
+/*
+ * This file is part of ramon/avocado.
+ *
+ * Copyright (c) 2026 Ramon.
+ *
+ * For the full copyright and license information, please view the LICENSE.md
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace Ramon\Avocado\Controller;
+
+use Carbon\Carbon;
+use Flarum\Discussion\Discussion;
+use Flarum\Foundation\ValidationException;
+use Flarum\Http\RequestUtil;
+use Flarum\Locale\TranslatorInterface;
+use Flarum\User\Exception\PermissionDeniedException;
+use Illuminate\Support\Arr;
+use Laminas\Diactoros\Response\JsonResponse;
+use Psr\Http\Message\ResponseInterface;
+use Flarum\User\User;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Ramon\Avocado\Model\Bookmark;
+use Ramon\Avocado\Support\BookmarksSetting;
+
+/**
+ * Nota e/ou lembrete do bookmark do ator (upsert). O user_id vem do servidor e
+ * a discussão precisa ser visível ao ator. Trocar o lembrete zera
+ * `reminder_sent_at`, rearmando o envio.
+ */
+class UpdateBookmarkController implements RequestHandlerInterface
+{
+    public const NOTE_MAX_LENGTH = 1000;
+
+    /**
+     * Lembretes pendentes por usuário. O comando envia um lote por rodada, e
+     * sem teto um único usuário enchia a fila e atrasava os lembretes de todos.
+     */
+    public const MAX_PENDING_REMINDERS = 100;
+
+    public function __construct(
+        protected BookmarksSetting $bookmarks,
+        protected TranslatorInterface $translator,
+    ) {
+    }
+
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        if (! $this->bookmarks->enabled()) {
+            throw new PermissionDeniedException();
+        }
+
+        $actor = RequestUtil::getActor($request);
+        $actor->assertRegistered();
+
+        $body = (array) ($request->getParsedBody() ?? []);
+        $discussion = $this->resolveDiscussion($body, $request, $actor);
+
+        $note = $this->parseNote($body);
+        $remindAt = $this->parseRemindAt($body);
+
+        /** @var Bookmark $bookmark */
+        $bookmark = Bookmark::query()->firstOrNew([
+            'user_id'       => (int) $actor->id,
+            'discussion_id' => (int) $discussion->id,
+        ]);
+
+        if (! $bookmark->exists) {
+            $bookmark->created_at = Carbon::now();
+        }
+
+        if (array_key_exists('note', $body)) {
+            $bookmark->note = $note;
+        }
+
+        if (array_key_exists('remindAt', $body)) {
+            if ($remindAt !== null && ! $this->hasPendingReminder($bookmark) && $this->pendingReminders($actor) >= self::MAX_PENDING_REMINDERS) {
+                throw new ValidationException(['remindAt' => $this->translator->trans('ramon-avocado.api.too_many_reminders', ['max' => self::MAX_PENDING_REMINDERS])]);
+            }
+
+            $bookmark->remind_at = $remindAt;
+            $bookmark->reminder_sent_at = null;
+        }
+
+        $bookmark->save();
+
+        return new JsonResponse([
+            'discussionId' => (string) $discussion->id,
+            'bookmarked'   => true,
+            'note'         => $bookmark->note,
+            'remindAt'     => $bookmark->remind_at?->toIso8601String(),
+        ]);
+    }
+
+    private function resolveDiscussion(array $body, ServerRequestInterface $request, User $actor): Discussion
+    {
+        $rawId = Arr::get($body, 'discussionId', Arr::get($request->getQueryParams(), 'discussionId'));
+
+        $discussionId = filter_var($rawId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($discussionId === false) {
+            throw new ValidationException(['discussionId' => $this->translator->trans('ramon-avocado.api.invalid_discussion_id')]);
+        }
+
+        /** @var Discussion|null $discussion */
+        $discussion = Discussion::whereVisibleTo($actor)->find($discussionId);
+        if (! $discussion) {
+            throw new ValidationException(['discussionId' => $this->translator->trans('ramon-avocado.api.discussion_not_found')]);
+        }
+
+        return $discussion;
+    }
+
+    private function parseNote(array $body): ?string
+    {
+        $raw = Arr::get($body, 'note');
+        if ($raw === null) {
+            return null;
+        }
+        if (! is_string($raw)) {
+            throw new ValidationException(['note' => $this->translator->trans('ramon-avocado.api.invalid_note')]);
+        }
+
+        $note = trim($raw);
+        if ($note === '') {
+            return null;
+        }
+        if (mb_strlen($note) > self::NOTE_MAX_LENGTH) {
+            throw new ValidationException(['note' => $this->translator->trans('ramon-avocado.api.note_too_long')]);
+        }
+
+        return $note;
+    }
+
+    private function parseRemindAt(array $body): ?Carbon
+    {
+        $raw = Arr::get($body, 'remindAt');
+        if ($raw === null || $raw === '') {
+            return null;
+        }
+        if (! is_string($raw)) {
+            throw new ValidationException(['remindAt' => $this->translator->trans('ramon-avocado.api.invalid_reminder_date')]);
+        }
+
+        try {
+            // O Eloquent grava a data sem o fuso: sem converter, um horário com offset
+            // viraria outro instante no banco.
+            $remindAt = Carbon::parse($raw)->utc();
+        } catch (\Throwable) {
+            throw new ValidationException(['remindAt' => $this->translator->trans('ramon-avocado.api.invalid_reminder_date')]);
+        }
+
+        if ($remindAt->isPast()) {
+            throw new ValidationException(['remindAt' => $this->translator->trans('ramon-avocado.api.reminder_must_be_future')]);
+        }
+        if ($remindAt->greaterThan(Carbon::now()->addYear())) {
+            throw new ValidationException(['remindAt' => $this->translator->trans('ramon-avocado.api.reminder_too_far')]);
+        }
+
+        return $remindAt;
+    }
+
+    /** Reagendar um lembrete que já está na fila não ocupa vaga nova. */
+    private function hasPendingReminder(Bookmark $bookmark): bool
+    {
+        return $bookmark->exists && $bookmark->remind_at !== null && $bookmark->reminder_sent_at === null;
+    }
+
+    private function pendingReminders(User $actor): int
+    {
+        return Bookmark::query()
+            ->where('user_id', $actor->id)
+            ->whereNotNull('remind_at')
+            ->whereNull('reminder_sent_at')
+            ->count();
+    }
+}

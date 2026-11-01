@@ -1,0 +1,608 @@
+// Todos os skeletons do tema (par do Skeletons.tsx). Cada um espelha a medida
+// do conteúdo real, para a página não pular quando ele chega.
+
+@keyframes avocado-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+@keyframes avocado-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+.AvocadoHome-skeletonCard {
+  padding: 16px;
+  border: 1px solid var(--home-border);
+  border-radius: 21px;
+}
+
+.AvocadoHome-skeletonHead {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+// DarkMode.less troca estas cores.
+.AvocadoHome-skeletonAvatar,
+.AvocadoHome-skeletonLine {
+  background: linear-gradient(90deg, #f0f0f4 25%, #e6e6eb 50%, #f0f0f4 75%);
+  background-size: 800px 100%;
+  animation: avocado-shimmer 1.4s infinite;
+}
+
+.AvocadoHome-skeletonAvatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.AvocadoHome-skeletonBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.AvocadoHome-skeletonActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+// A largura vem do conteúdo real oculto (ícone + rótulo traduzido), então
+// acompanha o botão em qualquer idioma.
+.AvocadoHome-skeletonActions-reply {
+  height: 34px;
+  border-radius: 100px;
+  background: linear-gradient(90deg, #f0f0f4 25%, #e6e6eb 50%, #f0f0f4 75%);
+  background-size: 800px 100%;
+  animation: avocado-shimmer 1.4s infinite;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 13px;
+  box-sizing: border-box;
+  > * { visibility: hidden; }
+}
+
+.AvocadoHome-skeletonStats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  margin-left: 54px; // espelha o margin-left: 52px do threadStats
+}
+
+.AvocadoHome-skeletonLine {
+  border-radius: 6px;
+
+  &--meta    { height: 12px; width: 42%; }                      // autor + data
+  &--title   { height: 58px; width: 92%; border-radius: 8px; }  // título de 2 linhas a 25px/1.15
+  &--excerpt { height: 16px; width: 78%; }
+  &--excerpt2 { height: 16px; width: 55%; }
+  &--stat    { height: 24px; width: 74px; border-radius: 12px; }
+
+  // Usadas pelo renderPostSkeleton.
+  &--sm      { height: 10px; width: 40%; }
+  &--md      { height: 12px; width: 70%; }
+  &--lg      { height: 20px; width: 90%; }
+  &--heading { height: 22px; width: 140px; border-radius: 8px; }
+}
+
+.AvocadoSearch-postSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--home-border);
+  border-radius: 18px;
+  background: var(--body-bg);
+
+  &-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: linear-gradient(90deg, #f0f0f4 25%, #e6e6eb 50%, #f0f0f4 75%);
+    background-size: 800px 100%;
+    animation: avocado-shimmer 1.4s infinite;
+  }
+
+  &-meta {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &-pill {
+    height: 26px;
+    width: 55%;
+    border-radius: 100px;
+    background: linear-gradient(90deg, #f0f0f4 25%, #e6e6eb 50%, #f0f0f4 75%);
+    background-size: 800px 100%;
+    animation: avocado-shimmer 1.4s infinite;
+    animation-delay: 0.1s;
+  }
+
+  &-excerpt {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+}
+
+.AvocadoHome-showcaseSkeleton {
+  border-radius: 16px;
+  border: 1px solid var(--home-border);
+  // 150px de imagem + ~136px de corpo + 14px de padding
+  min-height: 300px;
+  background: linear-gradient(90deg, var(--avocado-surface-1) 25%, var(--avocado-border-subtle) 50%, var(--avocado-surface-1) 75%);
+  background-size: 800px 100%;
+  animation: avocado-shimmer 1.4s infinite;
+
+  &--cta { display: none; }
+
+  @media @phone {
+    flex: 0 0 72vw;
+    max-width: 260px;
+  }
+}
+
+.AvocadoHome-showcaseSkeleton-top,
+.AvocadoHome-showcaseSkeleton-bottom { display: none; }
+
+// O botão real esconde o texto com font-size: 0 no phone.
+@media @phone {
+  .AvocadoHome-skeletonActions-reply {
+    padding: 0 10px;
+    > span { display: none; }
+    > i { font-size: 14px; }
+  }
+}
+
+.DiscussionPage--skeleton {
+  background: #fff;
+  --disc-avatar: 48px;
+  --disc-gap: 24px;
+
+  .Page-main { display: block; }
+
+  // A cor da tag ainda não é conhecida.
+  .AvocadoSkeleton-discussionHero {
+    background: transparent;
+    border-bottom: 1px solid var(--avocado-border-subtle);
+
+    .container {
+      padding: 0;
+      max-width: 100%;
+    }
+  }
+
+  // Sem gap: somado às margens ele dobraria o espaçamento e deslocaria o
+  // top: 50% da decoração em relação ao hero real.
+  .AvocadoSkeleton-heroInner {
+    position: relative;
+    max-width: var(--home-max-width, 1320px);
+    margin: 0 auto;
+    padding: 48px 20px 52px;
+  }
+
+  .AvocadoSkeleton-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .AvocadoSkeleton-backBtn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  .AvocadoSkeleton-tag {
+    height: 26px;
+    width: 72px;
+    border-radius: 100px;
+    background: rgba(0, 0, 0, 0.07);
+  }
+
+  .AvocadoSkeleton-title {
+    height: 32px;
+    width: 45%;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.09);
+  }
+
+  .AvocadoSkeleton-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .AvocadoSkeleton-avatarStack {
+    display: flex;
+
+    .AvocadoSkeleton-stackItem {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.10);
+      border: 1.5px solid var(--body-bg, #fff);
+      margin-left: -8px;
+      box-sizing: border-box;
+
+      &:first-child { margin-left: 0; }
+
+      &--more {
+        background: rgba(0, 0, 0, 0.14);
+      }
+    }
+  }
+
+  .AvocadoSkeleton-metaChip {
+    height: 16px;
+    border-radius: 100px;
+    background: rgba(0, 0, 0, 0.07);
+
+    &--sm { width: 60px; }
+    &--md { width: 90px; }
+  }
+
+
+  // Variante editorial: a corrente entra no skeleton porque é a primeira coisa
+  // que se vê dela. Mesmo eixo, espessura e breakpoint da regra real.
+  @media @desktop-up {
+    html[data-avocado-disc-style="editorial"] & {
+      // Sem o recuo do post: o avatar do skeleton já começa na borda do stream.
+      // Meio avatar, menos 1px porque a linha tem 2px.
+      .AvocadoSkeleton-stream {
+        position: relative;
+        background-image: linear-gradient(
+          var(--avocado-border-subtle, #eaeaf0),
+          var(--avocado-border-subtle, #eaeaf0)
+        );
+        background-repeat: no-repeat;
+        background-position: calc(var(--disc-avatar) / 2 - 1px) 0;
+        background-size: 2px 100%;
+      }
+
+      .AvocadoSkeleton-postAvatar {
+        box-shadow: 0 0 0 3px var(--body-bg, #fff);
+        // O nó precisa ser opaco para esconder a linha, e a cor do skeleton é
+        // translúcida no escuro.
+        background: linear-gradient(var(--avocado-skel-avatar, #e7e7ed), var(--avocado-skel-avatar, #e7e7ed)) var(--body-bg, #fff);
+      }
+
+      // Pulsar o post inteiro deixava o nó translúcido e a linha aparecia por trás.
+      .AvocadoSkeleton-post {
+        animation: none;
+
+        &:nth-child(2) .AvocadoSkeleton-postBody { animation-delay: 0.18s; }
+        &:nth-child(3) .AvocadoSkeleton-postBody { animation-delay: 0.36s; }
+      }
+      .AvocadoSkeleton-postBody {
+        animation: avocado-pulse 1.5s ease-in-out infinite;
+      }
+
+      // `min()` escapado como na regra real: o LESS resolveria `100% - 48px` na
+      // compilação.
+    }
+  }
+
+  // Fora do atributo da variante porque a largura real também vale nas duas
+  // opções (DiscussionPage.less).
+  @media @desktop-up {
+    .Page-container.container {
+      max-width: ~"min(1440px, calc(100% - 48px))";
+      width: 100%;
+    }
+
+    .Page-content {
+      max-width: none;
+      width: auto;
+      margin: 0;
+      flex: 1 1 auto;
+      min-width: 0;
+      padding: 0 44px 0 24px;
+    }
+
+    .Page-sidebar {
+      flex: 0 0 176px;
+      width: 176px;
+    }
+  }
+
+  // A contagem segue o admin (1 ou 2).
+  .AvocadoSkeleton-decoContainer {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
+    pointer-events: none;
+    z-index: 2;
+
+    &.is-two          { right: 0; gap: 16px; }
+    &.is-two.has-divider { gap: 0; }
+  }
+
+  .AvocadoSkeleton-decoIcon {
+    width:  clamp(45px, 11vw, 100px);
+    height: clamp(45px, 11vw, 100px);
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.08);
+    animation: avocado-pulse 1.5s ease-in-out infinite;
+    flex-shrink: 1;
+
+    &:last-child { animation-delay: 0.18s; }
+
+    // fit-content / auto para ícones largos do kit renderizarem no tamanho natural.
+    &--icon {
+      width: fit-content;
+      height: auto;
+      max-width: unset;
+      background: transparent;
+      border-radius: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+
+      i, .fa-kit {
+        font-size: clamp(45px, 11vw, 100px);
+        color: rgba(0, 0, 0, 0.13);
+        line-height: 1;
+        display: block;
+        max-height: none !important;
+        padding: 0 !important;
+        width: auto !important;
+        height: 1em;
+      }
+    }
+  }
+
+  .AvocadoSkeleton-decoSep {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: clamp(32px, 8vw, 52px);
+    color: rgba(0, 0, 0, 0.10);
+    padding: 0 12px;
+    animation: avocado-pulse 1.5s ease-in-out infinite 0.09s;
+
+    i { display: block; line-height: 1; }
+  }
+
+  .AvocadoSkeleton-stream {
+    display: flex;
+    flex-direction: column;
+    margin-top: 30px;
+  }
+
+  .AvocadoSkeleton-post {
+    display: flex;
+    gap: var(--disc-gap);
+    padding: 32px 0;
+    border-bottom: 1px solid #f0f0f4;
+    animation: avocado-pulse 1.5s ease-in-out infinite;
+
+    &:nth-child(2) { animation-delay: 0.18s; }
+    &:nth-child(3) { animation-delay: 0.36s; }
+  }
+
+  .AvocadoSkeleton-postAvatar {
+    width: var(--disc-avatar);
+    height: var(--disc-avatar);
+    border-radius: 999px;
+    flex-shrink: 0;
+    background: #e7e7ed;
+  }
+
+  .AvocadoSkeleton-postBody {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 2px;
+  }
+
+  .AvocadoSkeleton-postHeader {
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .AvocadoSkeleton-postAvatarSm {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    flex-shrink: 0;
+    background: #e7e7ed;
+  }
+
+  .AvocadoSkeleton-line {
+    border-radius: 6px;
+    background: #e7e7ed;
+
+    &--sm   { height: 12px; width: 36%; }
+    &--md   { height: 12px; width: 65%; }
+    &--lg   { height: 80px; width: 100%; border-radius: 8px; }
+  }
+}
+
+// O `.DiscussionPage .Page` do core não casa com o skeleton, onde as duas
+// classes estão no mesmo elemento.
+@media @tablet-up {
+  .DiscussionPage--skeleton {
+    --sidebar-width: 180px;
+    --gap: 55px;
+
+    // O PageStructure só liga o flex no desktop-up.
+    .Page-container {
+      display: flex;
+      flex-direction: row-reverse;
+      gap: var(--gap);
+    }
+    .Page-content {
+      flex: 1;
+      min-width: 0;
+      margin-top: 10px;
+    }
+    .Page-sidebar {
+      width: var(--sidebar-width);
+      flex-shrink: 0;
+      margin-top: 0;
+    }
+  }
+}
+
+.DiscussionPage--skeleton .DiscussionPage-nav {
+  padding-top: 32px;
+
+  > ul > li { margin-bottom: 10px; }
+
+  .AvocadoSkeleton-navSplitMain {
+    height: 40px;
+    border-radius: 16px;
+    background: var(--avocado-surface-1);
+    animation: avocado-pulse 1.5s ease-in-out infinite;
+
+    &--secondary { animation-delay: 0.1s; }
+  }
+
+  .AvocadoSkeleton-navScrubber {
+    height: 36px;
+    border-radius: 10px;
+    background: var(--avocado-surface-1);
+    animation: avocado-pulse 1.5s ease-in-out infinite;
+    animation-delay: 0.2s;
+  }
+}
+
+@media @tablet {
+  .DiscussionPage--skeleton {
+    --disc-avatar: 40px;
+    --disc-gap: 18px;
+
+    .AvocadoSkeleton-heroInner { padding: 36px 20px 40px; }
+    .AvocadoSkeleton-post { padding: 24px 0; }
+  }
+}
+
+@media @phone {
+  .DiscussionPage--skeleton {
+    --disc-avatar: 34px;
+    --disc-gap: 12px;
+
+    .AvocadoSkeleton-heroInner { padding: 32px 20px 36px; }
+    .AvocadoSkeleton-nav   { justify-content: center; }
+    .AvocadoSkeleton-title { width: 85%; margin: 0 auto; }
+    .AvocadoSkeleton-meta  { justify-content: center; }
+    .AvocadoSkeleton-line--lg { height: 56px; }
+
+    .AvocadoSkeleton-post         { display: block; padding: 18px 0; }
+    .AvocadoSkeleton-postAvatar   { display: none; }
+    .AvocadoSkeleton-postBody     { padding-top: 0; }
+    .AvocadoSkeleton-line--user   { display: none; }
+    .AvocadoSkeleton-postHeader   { display: flex; }
+
+    .Page-sidebar { display: none; }
+
+    .AvocadoSkeleton-decoContainer { display: none !important; }
+  }
+}
+
+// Ossos: o esqueleto usa as mesmas classes do que vai substituí-lo, então
+// caixa e espaçamento vêm do CSS real. Aqui só se pinta.
+
+.AvocadoBone {
+  // DarkMode.less troca as duas cores.
+  --avocado-bone: #f0f0f4;
+  --avocado-bone-shine: #e6e6eb;
+  pointer-events: none;
+  user-select: none;
+}
+
+.avocado-bone-paint() {
+  background: linear-gradient(90deg, var(--avocado-bone) 25%, var(--avocado-bone-shine) 50%, var(--avocado-bone) 75%);
+  background-size: 800px 100%;
+  animation: avocado-shimmer 1.4s infinite;
+}
+
+// A caixa tem a altura de linha real, que mantém o espaçamento; a barra
+// visível é mais baixa e centrada.
+.AvocadoBone--text {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  color: transparent;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 0.8em;
+    transform: translateY(-50%);
+    border-radius: 0.3em;
+    .avocado-bone-paint();
+  }
+}
+
+// O conteúdo só dá a largura. Duas classes para ganhar do fundo do elemento.
+.AvocadoBone.AvocadoBone--fill {
+  .avocado-bone-paint();
+  border-color: transparent;
+  box-shadow: none;
+  color: transparent;
+
+  > * { visibility: hidden; }
+}
+
+.AvocadoHome-threadCard--skeleton {
+  pointer-events: none;
+
+  .AvocadoHome-threadExcerpt > .AvocadoBone--text { display: block; }
+}
+
+.AvocadoUserPage-hero--skeleton {
+  pointer-events: none;
+
+  .AvocadoUserPage-cover {
+    background: color-mix(in srgb, var(--muted-color) 28%, var(--body-bg));
+
+    &::after { display: none; }
+  }
+
+  // O botão de controles define fundo e borda com !important.
+  .AvocadoUserPage-controlsBtn.AvocadoBone--fill {
+    .avocado-bone-paint() !important;
+    border-color: transparent !important;
+  }
+}
+
+.AvocadoUserPage-nav--skeleton {
+  pointer-events: none;
+}

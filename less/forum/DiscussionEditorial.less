@@ -1,0 +1,134 @@
+// Variante "editorial" da página de discussão: coluna de leitura mais larga e
+// o fio da conversa como uma corrente (hairline no eixo da coluna do avatar,
+// com avatares como nós e intervalos de tempo como estações). O hero não muda.
+//
+// Ligada por html[data-avocado-disc-style="editorial"], escrito antes do
+// primeiro paint. Só no desktop: no tablet a coluna do avatar tem 40px e o
+// eixo fica apertado demais.
+@media @desktop-up {
+  html[data-avocado-disc-style="editorial"] {
+    .Page.DiscussionPage {
+      // O core zera o padding-left do .Post e o tema só o devolve com fixedAvatar.
+      // A corrente, o EventPost e o CTA de visitante precisam do mesmo recuo para
+      // cair no mesmo eixo.
+      --disc-post-pad: var(--post-padding, 20px);
+
+      // O linkrobins/badge-labels alarga este token (BadgeLabels.less).
+      --disc-side-col: var(--disc-avatar);
+
+      // Centro da coluna, não `recuo + meio avatar`: com a coluna alargada o avatar
+      // é centrado nela e só esta conta acompanha.
+      --disc-spine-x: calc(var(--disc-post-pad) + var(--disc-side-col) / 2);
+
+    }
+
+    // Sem o recuo em todo post o eixo mudaria conforme o fixedAvatar.
+    .Page.DiscussionPage .CommentPost {
+      padding-left: var(--disc-post-pad);
+    }
+
+    // Background do stream para ficar atrás de tudo, sem briga de z-index. O
+    // recuo de 1px centra a linha de 2px no eixo.
+    .Page.DiscussionPage .PostStream {
+      position: relative;
+      background-image: linear-gradient(
+        var(--avocado-border-subtle, #eaeaf0),
+        var(--avocado-border-subtle, #eaeaf0)
+      );
+      background-repeat: no-repeat;
+      background-position: calc(var(--disc-spine-x) - 1px) 0;
+      background-size: 2px 100%;
+    }
+
+    // O anel na cor do fundo faz a corrente passar limpa por trás do nó. Sem
+    // anel extra para o autor: em primárias escuras ele lê como borda preta.
+    .Page.DiscussionPage .CommentPost .Post-side .Avatar,
+    .Page.DiscussionPage .CommentPost .Post-side a .Avatar {
+      box-shadow: 0 0 0 3px var(--body-bg);
+    }
+
+    // O EventPost não herda o recuo do post comum e o ícone sairia do eixo.
+    .Page.DiscussionPage .EventPost .Post-container {
+      padding-left: var(--disc-post-pad);
+    }
+
+    .Page.DiscussionPage .EventPost .EventPost-icon {
+      box-shadow: 0 0 0 3px var(--body-bg);
+      background: var(--control-bg);
+    }
+
+    .Page.DiscussionPage .PostStream-timeGap {
+      position: relative;
+      display: block;
+      margin: 8px 0;
+      padding: 8px 0 8px calc(var(--disc-spine-x) + 16px);
+      text-align: left;
+      font: 800 10.5px/1 @font-sans;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--muted-color);
+      background: none;
+      border: none;
+
+      &::after {
+        border: none !important;
+        background: none !important;
+        content: none !important;
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: calc(var(--disc-spine-x) - 6px);
+        top: 50%;
+        transform: translateY(-50%);
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--body-bg);
+        border: 2px solid var(--avocado-border-subtle, #eaeaf0);
+        display: block;
+      }
+
+      span {
+        background: var(--body-bg);
+        padding: 0 2px;
+      }
+    }
+
+    // Repetem o que o hero já mostra logo acima.
+    .Page.DiscussionPage .PostStream .AvocadoThreads-tagRow {
+      display: none;
+    }
+
+    // Começa onde começa o corpo do post, à direita da corrente. A conta sai do
+    // eixo para acompanhar a coluna larga: eixo × 2 − recuo + vão.
+    .Page.DiscussionPage .AvocadoPostCta-wrapper {
+      padding-left: calc(2 * var(--disc-spine-x) - var(--disc-post-pad) + var(--disc-gap));
+    }
+
+    // A prévia do composer é um `.CommentPost.editing` sem `--fixedAvatar`.
+    .Page.DiscussionPage .CommentPost.editing {
+      padding-left: var(--disc-post-pad);
+    }
+
+    // O core deixa a prévia inteira a 50% e a linha atravessava o avatar. O
+    // apagado vai para o conteúdo e um disco opaco faz o papel do nó.
+    .Page.DiscussionPage .CommentPost.editing {
+      opacity: 1;
+
+      .Post-main,
+      .Post-side > * {
+        opacity: 0.5;
+      }
+      .Post-side {
+        background: radial-gradient(
+            circle calc(var(--disc-avatar) / 2 + 3px) at 50% calc(var(--disc-avatar) / 2),
+            var(--body-bg) 99%,
+            transparent 100%
+          )
+          no-repeat;
+      }
+    }
+  }
+}
