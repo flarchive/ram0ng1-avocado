@@ -1,0 +1,99 @@
+// O hljs-loader injeta o tema "github" no <head> depois do forum.css, com
+// cores fixas para fundo claro. As classes hljs-* passam a ler os tokens
+// --avocado-code-*, que acompanham o tema do fórum. O `pre` na frente de cada
+// seletor ganha do tema injetado sem depender da ordem.
+
+// O tema injetado pinta .hljs de branco fora da discussão; fundo e cor de
+// base ficam com os do <pre>.
+html pre code.hljs {
+  background: transparent;
+  color: inherit;
+}
+
+pre {
+  .hljs-keyword,
+  .hljs-doctag,
+  .hljs-template-tag,
+  .hljs-template-variable,
+  .hljs-type,
+  .hljs-variable.language_ {
+    color: var(--avocado-code-keyword);
+  }
+
+  .hljs-title,
+  .hljs-title.class_,
+  .hljs-title.class_.inherited__,
+  .hljs-title.function_ {
+    color: var(--avocado-code-title);
+  }
+
+  .hljs-attr,
+  .hljs-attribute,
+  .hljs-literal,
+  .hljs-meta,
+  .hljs-number,
+  .hljs-operator,
+  .hljs-variable,
+  .hljs-selector-attr,
+  .hljs-selector-class,
+  .hljs-selector-id {
+    color: var(--avocado-code-constant);
+  }
+
+  .hljs-regexp,
+  .hljs-string,
+  .hljs-meta .hljs-string {
+    color: var(--avocado-code-string);
+  }
+
+  .hljs-built_in,
+  .hljs-symbol {
+    color: var(--avocado-code-builtin);
+  }
+
+  .hljs-comment,
+  .hljs-code,
+  .hljs-formula {
+    color: var(--avocado-code-comment);
+  }
+
+  .hljs-name,
+  .hljs-quote,
+  .hljs-selector-tag,
+  .hljs-selector-pseudo {
+    color: var(--avocado-code-tag);
+  }
+
+  .hljs-subst {
+    color: inherit;
+  }
+
+  .hljs-section {
+    color: var(--avocado-code-constant);
+    font-weight: 700;
+  }
+
+  .hljs-bullet {
+    color: var(--avocado-code-bullet);
+  }
+
+  .hljs-emphasis {
+    color: inherit;
+    font-style: italic;
+  }
+
+  .hljs-strong {
+    color: inherit;
+    font-weight: 700;
+  }
+
+  .hljs-addition {
+    color: var(--avocado-code-addition);
+    background-color: var(--avocado-code-addition-bg);
+  }
+
+  .hljs-deletion {
+    color: var(--avocado-code-deletion);
+    background-color: var(--avocado-code-deletion-bg);
+  }
+}

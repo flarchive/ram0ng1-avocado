@@ -1,0 +1,54 @@
+// Ícone SVG de tag dimensionado como um glifo Font Awesome, para ocupar o lugar
+// dele onde `tag.icon()` aparece. Via componente Icon vem como SVG inline; como
+// classe solta (<i class={tag.icon()} />) é um elemento vazio pintado a partir
+// de `--tag-icon-svg`.
+.TagIconSvg {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  line-height: 1;
+  vertical-align: -0.125em;
+  text-align: center;
+
+  // A escala vai no desenho, não na caixa: ela segue 1em e o que está em volta
+  // não muda de tamanho.
+  > svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+    overflow: visible;
+    transform: scale(var(--tag-icon-scale, 1));
+  }
+
+  // Monocromático: só as cores explícitas viram currentColor; `none`/`transparent`
+  // ficam, para não perder recortes. O sanitizer move fill/stroke para atributos
+  // justamente para estes seletores enxergarem.
+  &--mono > svg {
+    *:not([fill="none" i]):not([fill="transparent" i]) {
+      fill: currentColor !important;
+    }
+
+    [stroke]:not([stroke="none" i]):not([stroke="transparent" i]) {
+      stroke: currentColor !important;
+    }
+  }
+
+  // Pseudo-elemento dá à caixa tamanho intrínseco, como um glifo, mesmo onde o
+  // ícone recebe `width: fit-content`.
+  &:empty::before {
+    content: '';
+    display: block;
+    width: 1em;
+    height: 1em;
+    background: var(--tag-icon-svg) center / contain no-repeat;
+    transform: scale(var(--tag-icon-scale, 1));
+  }
+
+  // Monocromático: a cor do texto vista pela forma do SVG.
+  &--mono:empty::before {
+    background: currentColor;
+    -webkit-mask: var(--tag-icon-svg) center / contain no-repeat;
+    mask: var(--tag-icon-svg) center / contain no-repeat;
+  }
+}

@@ -1,0 +1,50 @@
+// Painel lateral da lista de discussões; existe sem o flarum/messages.
+
+// O core posiciona o painel com left: calc(-6px - var(--pane-width)); a
+// largura é redefinida aqui para o estado fechado ficar fora da tela.
+:root {
+  --pane-width: 450px;
+}
+
+@media @tablet-up {
+  aside.DiscussionListPane {
+    width: var(--pane-width) !important;
+    left: calc(-6px - var(--pane-width)) !important;
+    transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    background: var(--body-bg) !important;
+    border-right: 1px solid var(--control-bg) !important;
+    box-shadow: 0 6px 6px var(--shadow-color) !important;
+    overflow-y: auto !important;
+
+    .paneShowing & {
+      left: 0 !important;
+    }
+
+    .panePinned & {
+      left: 0 !important;
+      transition: none !important;
+    }
+
+    // O DiscussionPage.less pinta este fundo; zera para valer o do painel.
+    .DiscussionList {
+      background: transparent !important;
+      padding: 0 !important;
+    }
+
+    .DiscussionListItem {
+      width: 100% !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      &:hover { background: var(--control-bg) !important; }
+    }
+    .DiscussionListItem-content {
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+    }
+    .item-count,
+    .DiscussionListItem-stats {
+      right: 12px !important;
+    }
+  }
+}

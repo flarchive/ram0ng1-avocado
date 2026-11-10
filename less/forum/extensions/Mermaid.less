@@ -1,0 +1,26 @@
+// datlechin/flarum-mermaid já usa a paleta do fórum e redesenha ao trocar o
+// tema; aqui só entra a moldura dos blocos de código.
+
+.Post-body .MermaidDiagram {
+  margin: 14px 0;
+  padding: 20px 16px;
+  border: 1px solid var(--avocado-border-subtle);
+  border-radius: 12px;
+  // Transparente: a extensão pinta os rótulos das arestas com --body-bg, e um
+  // fundo próprio deixaria cada um num retângulo.
+  background: transparent;
+  overflow-x: auto;
+  // `safe` evita cortar à esquerda um diagrama mais largo que o post.
+  justify-content: safe center;
+}
+
+// A borda de erro da extensão fica colada ao texto (o <code> não tem padding),
+// então o aviso vai para a borda do bloco.
+.Post-body pre:has(> code.language-mermaid[data-mermaid-error]) {
+  border-color: color-mix(in srgb, var(--alert-error-color, #d83e3e) 60%, transparent);
+}
+
+.Post-body pre code.language-mermaid[data-mermaid-error] {
+  border-left: 0;
+  padding-left: 0;
+}

@@ -1,0 +1,37 @@
+<?php
+
+/*
+ * This file is part of ramon/avocado.
+ *
+ * Copyright (c) 2026 Ramon.
+ *
+ * For the full copyright and license information, please view the LICENSE.md
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace Ramon\Avocado;
+
+use Flarum\Foundation\AbstractServiceProvider;
+use Ramon\Avocado\Support\SupportEvents;
+
+/**
+ * Observa o modelo do linkrobins/support. Confere o autoload mesmo com a
+ * extensão ativa: no meio de um deploy ela pode estar no banco e não no vendor.
+ */
+class SupportEventsServiceProvider extends AbstractServiceProvider
+{
+    public function boot(): void
+    {
+        if (! SupportEvents::ticketModelAvailable()) {
+            return;
+        }
+
+        // A mesma instância (singleton) que o middleware RememberActor alimenta.
+        $events = $this->container->make(SupportEvents::class);
+        $model = SupportEvents::TICKET_MODEL;
+
+        $model::updated(fn ($ticket) => $events->onTicketUpdated($ticket));
+    }
+}

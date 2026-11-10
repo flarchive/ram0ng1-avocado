@@ -1,0 +1,60 @@
+<?php
+
+/*
+ * This file is part of ramon/avocado.
+ *
+ * Copyright (c) 2026 Ramon.
+ *
+ * For the full copyright and license information, please view the LICENSE.md
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace Ramon\Avocado\Tests\unit;
+
+use Flarum\Discussion\Discussion;
+use Flarum\User\Access\AbstractPolicy;
+use Flarum\User\User;
+use Mockery;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
+use PHPUnit\Framework\Attributes\Group;
+use Ramon\Avocado\Access\DiscussionPolicy;
+
+/**
+ * uploadHeroImage() delega para `rename`: quem pode renomear é ALLOW; quem não
+ * pode é null (abstém, NÃO nega), senão vetaria as outras policies da cadeia.
+ */
+#[Group('security')]
+final class DiscussionPolicyTest extends MockeryTestCase
+{
+    public function test_allows_upload_when_actor_can_rename_the_discussion(): void
+    {
+        $discussion = Mockery::mock(Discussion::class);
+
+        $actor = Mockery::mock(User::class);
+        $actor->shouldReceive('can')
+            ->once()
+            ->with('rename', $discussion)
+            ->andReturnTrue();
+
+        $result = (new DiscussionPolicy())->uploadHeroImage($actor, $discussion);
+
+        self::assertSame(AbstractPolicy::ALLOW, $result);
+    }
+
+    public function test_abstains_when_actor_cannot_rename_the_discussion(): void
+    {
+        $discussion = Mockery::mock(Discussion::class);
+
+        $actor = Mockery::mock(User::class);
+        $actor->shouldReceive('can')
+            ->once()
+            ->with('rename', $discussion)
+            ->andReturnFalse();
+
+        $result = (new DiscussionPolicy())->uploadHeroImage($actor, $discussion);
+
+        self::assertNull($result);
+    }
+}
